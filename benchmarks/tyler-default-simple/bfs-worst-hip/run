@@ -1,0 +1,6 @@
+#!/bin/bash
+if timeout $TIMEOUT ./bfs-worst $(python3 genSizes.py $1) ; then
+	echo "Command did not time out\n"
+else
+	echo "Command timed out after $TIMEOUT seconds\n"
+fi

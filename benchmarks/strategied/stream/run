@@ -1,0 +1,12 @@
+#!/bin/bash
+data=stream_pref.data
+
+psize=$(python3 genSizes.py $1)
+cmd="./cuda-stream --float --triad-only -n 10 -s $psize $2 $3 $4 $5 $6 $7 $8 $9" 
+out="./cuda-stream $1  --float --triad-only -n 10 -s $psize $2 $3 $4 $5 $6 $7 $8 $9"
+echo $out >> $data
+if timeout $TIMEOUT time 2>> $data $cmd >> $data; then
+	echo "Command did not time out\n" >> $data
+else
+	echo "Command timed out after $TIMEOUT seconds\n" >> $data
+fi

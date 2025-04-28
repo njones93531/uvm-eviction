@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cp tea$1.in tea.in
+numactl --physcpubind=8-15 --preferred=1 ./tealeaf $2 $3

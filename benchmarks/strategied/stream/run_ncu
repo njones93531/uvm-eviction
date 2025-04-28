@@ -1,0 +1,12 @@
+#!/bin/bash
+data=stream.ncu.data
+
+psize=$(python3 genSizes.py $1)
+cmd="ncu --metrics pcie__read_bytes.sum,pcie__write_bytes.sum,pcie__read_bytes.sum.per_second,pcie__write_bytes.sum.per_second ./cuda-stream --float --triad-only -n 10 -s $psize $2 $3 $4 $5 $6 $7 $8 $9"
+echo $cmd >> $data
+echo $1 >> $data
+if timeout $TIMEOUT nvprof 2>> $data $cmd >> $data; then
+	echo "Command did not time out\n" >> $data
+else
+	echo "Command timed out after $TIMEOUT seconds\n" >> $data
+fi

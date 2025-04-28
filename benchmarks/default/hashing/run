@@ -1,0 +1,4 @@
+
+#!/bin/bash
+
+numactl --physcpubind=8-15 --preferred=1 ./naive_fft $1

@@ -1,0 +1,28 @@
+#!/bin/bash
+basedir=/home/share/cusparse_graphs
+graph11=$basedir/uk-2005.mtx
+graph17=$basedir/twitter7.mtx
+graph21=$basedir/sk-2005.mtx
+graph22=$basedir/com-Friendster.mtx
+
+# Check if the first argument matches the specified values
+if [ "$1" == "11" ]; then
+    graph=$graph11
+elif [ "$1" == "17" ]; then
+    graph=$graph17
+elif [ "$1" == "21" ]; then
+    graph=$graph21
+elif [ "$1" == "22" ]; then
+    graph=$graph22
+else
+    echo "Unsupported problem size"
+    exit
+fi
+
+echo ./spmv_coo $1 $graph
+
+if timeout $TIMEOUT ./spmv_coo $graph ; then
+	echo "Command did not time out\n"
+else
+	echo "Command timed out after $TIMEOUT seconds\n"
+fi

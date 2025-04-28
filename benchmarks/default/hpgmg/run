@@ -1,0 +1,13 @@
+#!/bin/bash
+cmd="numactl --physcpubind=8-15 --preferred=1 ./build/bin/hpgmg-fv"
+
+# Check if the first argument matches the specified values
+if [ "$1" == "88" ]; then
+    $cmd 8 8
+elif [ "$1" == "97" ]; then
+    $cmd 9 7
+else
+    echo "Unsupported problem size"
+fi
+
+

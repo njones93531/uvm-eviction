@@ -1,0 +1,15 @@
+#!/bin/bash
+logbase=spmv-coo-twitter7
+exe=./spmv_coo
+data=${logbase}.ncu.data
+cmd="ncu --metrics pcie__read_bytes.sum,pcie__write_bytes.sum,pcie__read_bytes.sum.per_second,pcie__write_bytes.sum.per_second $exe /home/share/cusparse_graphs/twitter7.mtx $1 $2 $3 $4 $5 $6 $7 $8 $9"
+
+echo $cmd iter $i >> $data
+echo $1 >> $data
+if timeout $TIMEOUT 2>> $data $cmd >> $data; then
+	echo "Command did not time out\n" >> $data
+else
+	echo "Command timed out after $TIMEOUT seconds\n" >> $data
+	exit
+fi
+

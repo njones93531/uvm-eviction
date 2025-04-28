@@ -1,0 +1,28 @@
+#!/bin/bash
+logbase=fdtd-2d
+exe=./fdtd2d.exe
+data=${logbase}_pref.data
+if [ $ITERS -lt 1 ]
+then
+	ITERS=1
+fi
+
+#for i in $(seq 0 $ITERS)
+#do
+#	echo ${exe} $1 0 $2 $3 $4 $5 $6 $7 $8 $9 iter $i >> $data
+#	if timeout $TIMEOUT time 2>> $data ${exe} $1 0 $2 $3 $4 $5 $6 $7 >> $data; then
+#		echo "Command did not time out\n" >> $data
+#	else
+#		echo "Command timed out after $TIMEOUT seconds\n" >> $data
+#		exit
+#	fi
+#done
+
+echo ${exe} $1 0 $2 $3 $4 $5 $6 $7 $8 $9 iter $i >> $data
+if timeout $TIMEOUT time 2>> $data ${exe} $1 0 $2 $3 $4 $5 $6 $7 >> $data; then
+	echo "Command did not time out\n" >> $data
+else
+	echo "Command timed out after $TIMEOUT seconds\n" >> $data
+	exit
+fi
+

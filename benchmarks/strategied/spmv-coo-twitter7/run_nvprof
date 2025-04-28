@@ -1,0 +1,14 @@
+#!/bin/bash
+logbase=spmv-coo-twitter7
+exe=./spmv_coo
+data=${logbase}.nvprof.data
+
+
+echo ${exe} /home/share/cusparse_graphs/twitter7.mtx $1 $2 $3 $4 $5 $6 $7 $8 $9 iter $i >> $data
+if timeout $TIMEOUT nvprof 2>> $data ${exe} /home/share/cusparse_graphs/twitter7.mtx $1 $2 $3 $4 $5 $6 $7 >> $data; then
+	echo "Command did not time out\n" >> $data
+else
+	echo "Command timed out after $TIMEOUT seconds\n" >> $data
+	exit
+fi
+
