@@ -137,8 +137,8 @@ void CUDAStream<T>::init_arrays(T initA, T initB, T initC, int argc, char * argv
   acp.setAllocationPolicy((void**)&d_c, array_size*sizeof(T), 2, argc, argv);
 
   check_error();
-  //cudaDeviceSynchronize();
-  //check_error();
+  cudaDeviceSynchronize();
+  check_error();
 }
 
 template <class T>
@@ -228,7 +228,7 @@ template <class T>
 void CUDAStream<T>::triad()
 {
   //Include to make UVM upset 
-  unalign_kernel<<<array_size/TBSIZE, TBSIZE>>>(d_a, d_b, d_c);
+  //unalign_kernel<<<array_size/TBSIZE, TBSIZE>>>(d_a, d_b, d_c);
   triad_kernel<<<array_size/TBSIZE, TBSIZE>>>(d_a, d_b, d_c, array_size);
   check_error();
   cudaDeviceSynchronize();

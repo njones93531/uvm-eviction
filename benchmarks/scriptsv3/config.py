@@ -1,4 +1,4 @@
-ROOT = "/home/najones/uvm-eviction"
+ROOT = "/home/najones/test/uvm-eviction"
 
 BENCHDIR = f"{ROOT}/benchmarks"
 DRIVER_DIR=f"{ROOT}/drivers"
@@ -16,3 +16,5 @@ KERNEL_ARGS = {"hpcs_log_short": 0, "hpcs_log_prefetching" : 0, "hpcs_log_evicti
 PSIZES = ["9", "12", "15", "18", "21"] #in GB
 BENCHMARKS = ['bfs-worst', 'cublas', 'FDTD-2D', 'GRAMSCHM', 'stream', 'tealeaf', 'conjugateGradientUM']
 
+PSIZES_SUBSET = ["12", "15"] #in GB
+BENCHMARKS_SUBSET = ['bfs-worst', 'cublas', 'FDTD-2D', 'stream']

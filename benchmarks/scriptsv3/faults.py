@@ -5,10 +5,15 @@ import math
 import os
 import sys
 import time
+import argparse
 
-def get_experiment():
+def get_experiment(use_subset):
     psizes = config.PSIZES
     benchmarks = config.BENCHMARKS
+
+    if use_subset: 
+        psizes = config.PSIZES_SUBSET
+        benchmarks = config.BENCHMARKS_SUBSET
 
     print("Beginning experiments")
     print(f"Experimental Benchmarks: {benchmarks}")
@@ -42,8 +47,16 @@ def check_timeout():
 
 
 def main():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--subset", action="store_true", help="Only compute a representative subset of data")
+
+    args = parser.parse_args()
+
     check_timeout()
-    experiments = get_experiment()
+    experiments = get_experiment(args.subset)
+
+    os.makedirs("slurm_out", exist_ok=True)
     with open("slurm_out/faults_benchmark_times.txt", "w") as f:
         for experiment in experiments:
             start_time = time.perf_counter_ns()

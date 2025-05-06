@@ -1,0 +1,8 @@
+#!/bin/bash
+
+cd ../benchmarks/strategied/common/plot/
+python3 perf_data2csv.py
+cd - 
+
+cd ../tools/fault_plotsv3/
+python3 parse_metrics_relative.py

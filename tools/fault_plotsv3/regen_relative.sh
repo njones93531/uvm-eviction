@@ -1,0 +1,55 @@
+#!/bin/bash -x
+
+KB_per_GB=1000000
+total_kb=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+total_gb=$((total_kb / $KB_per_GB))
+running_jobs=0
+memory_used=0
+
+resubmit_prefix=""
+
+for size_GB in $((23 * $total_gb / 100)) $((45 * $total_gb / 100)) $((95 * $total_gb / 100)); do
+  size_KB=$((size_GB * KB_per_GB))
+
+  for log in $(find ../../benchmarks/default/ -name '*_klog'); do
+    found=false
+    for item in "${blacklist[@]}"; do
+      if [ "$item" == "$log" ]; then
+        found=true
+        break
+      fi
+    done
+
+    if [ "$found" != true ]; then
+      job_name="${resubmit_prefix}plot_$(basename $(dirname "$log"))"
+      log_dir="slurm_out"
+      mkdir -p "$log_dir"
+      slurm_file="${log_dir}/${job_name}.out"
+
+      output_file=$(python3 fault_parsing.py "$log")
+      if [ ! -e "$output_file" ]; then
+        (
+          ulimit -v $size_KB
+          python3 fault_plot.py "$log"
+        ) &> "$slurm_file" &
+
+        ((running_jobs+=1))
+        ((memory_used+=$size_GB))
+        if [ "$(($memory_used + $size_GB))" -ge "$total_gb" ]; then
+          wait -n  # wait for any job to finish before launching a new one
+          ((running_jobs-=1))
+          ((memory_used-=$size_GB))
+        fi
+      else
+        echo "skipping $output_file because it already exists."
+      fi
+    else
+      echo "skipping $log because it is on the blacklist."
+    fi
+  done
+
+  # Wait for all background jobs from this batch to complete
+  wait
+  resubmit_prefix="resubmit_"
+done
+

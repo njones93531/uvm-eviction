@@ -3,7 +3,7 @@
 base=../..
 figdir_base=../figures/mempress
 datadir=../figures/raw_data
-for method in 'pref' 'nopf'
+method='pref' 'nopf'
 do
   for bmark in FDTD-2D GRAMSCHM bfs-worst cublas stream 
   do
