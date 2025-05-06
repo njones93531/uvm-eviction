@@ -131,7 +131,9 @@ class Experiment:
             print("Build benchmark")
             sh.make("-j")
             print("Starting execution")
-            command = ["taskset", "0xFFFFFFFF", f'./{self.benchmark_exe}'] + [arg]
+            #TODO fix this for benchmarks that need more than just their problem size
+            psize_gb = int(int(arg) * config.VRAM_SIZE / 100)
+            command = ["taskset", "0xFFFFFFFF", f'./{self.benchmark_exe}'] + [str(psize_gb)]
             #command = ["taskset", "-c", "4,5", f'./{self.benchmark_exe}'] + self.benchmark_args
             p = subprocess.Popen(command, stdout=subprocess.PIPE)
             print(f"Running command {command}")

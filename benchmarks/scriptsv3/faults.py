@@ -17,19 +17,19 @@ def get_experiment(use_subset):
 
     print("Beginning experiments")
     print(f"Experimental Benchmarks: {benchmarks}")
-    print(f"Experimental Problem Sizes (GB): {psizes}")
+    print(f"Experimental Problem Sizes (%VRAM): {psizes}")
     benchmark_exe = "run"
-    benchmark_args = [psize for psize in psizes] 
     benchmark_dirs = [f"{config.BENCHDIR}/default/{bench}" for bench in benchmarks]
     experiments = []
     for i, benchmark in enumerate(benchmarks):
         experiments.append(Experiment(benchmark, benchmark_exe, benchmark_dirs[i], psizes,\
                                     config.KERNEL_VERSION, config.KERNEL_VARIANT, config.KERNEL_ARGS))
     # benchmarks are making deep copies of this struct so this should be okay
-    config.KERNEL_ARGS["uvm_perf_prefetch_enable"] = 0
-    for i, benchmark in enumerate(benchmarks):
-        experiments.append(Experiment(benchmark, benchmark_exe, benchmark_dirs[i], psizes,\
-                                      config.KERNEL_VERSION, config.KERNEL_VARIANT, config.KERNEL_ARGS))
+    if config.DO_NOPF:
+        config.KERNEL_ARGS["uvm_perf_prefetch_enable"] = 0
+        for i, benchmark in enumerate(benchmarks):
+            experiments.append(Experiment(benchmark, benchmark_exe, benchmark_dirs[i], psizes,\
+                                          config.KERNEL_VERSION, config.KERNEL_VARIANT, config.KERNEL_ARGS))
     return experiments
 
 def check_timeout():
