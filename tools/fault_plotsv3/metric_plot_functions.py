@@ -27,7 +27,6 @@ all_scalar=1
 markersize=2
 other_size=12
 text_scalar=1
-DEVICE_MEMORY=11.6
 
 tic = 0
 mem = 0
@@ -59,7 +58,11 @@ def plotter(func):
         return result
     return wrapper
 
-def prune_allocs(df_address_ranges, device_memory):
+def prune_allocs(df_address_ranges, psize_percentage):
+    #Get total alloc size
+    df_address_ranges['size'] = np.round((df_address_ranges['adjusted_end'] - df_address_ranges['adjusted_base']) / (1024 * 1024 * 1024), 2)
+    device_memory = int(df_address_ranges['size'].sum() * 100 / psize_percentage)
+
     #Remove any allocations < 1% of device memory
     df_address_ranges['size'] = np.round((df_address_ranges['adjusted_end'] - df_address_ranges['adjusted_base']) / (1024 * 1024 * 1024) / device_memory * 100, 2)
     df_address_ranges = df_address_ranges.loc[df_address_ranges['size'] > 0.02].copy()
@@ -153,7 +156,7 @@ def print_relative_metrics_relative_order(df_faults, df_prefetch, df_evictions, 
         output_path = output_state.get_output_path(output_dir)
 
     #Remove any allocations < 512MB
-    df_address_ranges = prune_allocs(df_address_ranges, DEVICE_MEMORY)
+    df_address_ranges = prune_allocs(df_address_ranges, output_state.psize)
 
     #Add allocation for each faddr
     printt("Adding allocation column")
@@ -285,7 +288,7 @@ def print_absolute_metrics_relative_order(df_faults, df_prefetch, df_evictions, 
 
 
     #Remove any allocations < 512MB
-    df_address_ranges = prune_allocs(df_address_ranges, DEVICE_MEMORY)
+    df_address_ranges = prune_allocs(df_address_ranges, output_state.psize)
 
     #Add allocation for each faddr
     printt("Adding allocation column")
@@ -411,7 +414,7 @@ def plot_absolute_metrics_relative_order(df_faults, df_prefetch, df_evictions, d
     fig, (ax1, ax2) = plt.subplots(2, 2)
 
     #Remove any allocations < 512MB
-    df_address_ranges = prune_allocs(df_address_ranges, DEVICE_MEMORY)
+    df_address_ranges = prune_allocs(df_address_ranges, output_state.psize)
 
     #Add allocation for each faddr
     printt("Adding allocation column")
@@ -504,7 +507,7 @@ def plot_relative_metrics_relative_order(df_faults, df_prefetch, df_evictions, d
         output_path = output_state.get_output_path(output_dir)
     
     #Remove any allocations < 512MB
-    df_address_ranges = prune_allocs(df_address_ranges, DEVICE_MEMORY)
+    df_address_ranges = prune_allocs(df_address_ranges, output_state.psize)
 
     #Add allocation for each faddr
     printt("Adding allocation column")

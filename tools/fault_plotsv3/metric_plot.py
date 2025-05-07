@@ -47,7 +47,7 @@ def main():
             print()
             print("############")
             print(f"Starting {plot_name}")
-            metric_plot_functions_dict[plot_name](df_faults, df_prefetch, df_evictions, df_address_ranges, output_state, args.plot_end, args.output_dir)
+            metric_plot_functions_dict[plot_name](df_faults, df_prefetch, df_evictions, df_address_ranges, output_state, args.plot_end, args.output_dir, psize)
             print(f"Finished {plot_name}")
             print("############")
             print()

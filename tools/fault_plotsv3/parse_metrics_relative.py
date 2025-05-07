@@ -486,7 +486,7 @@ def parse_df():
                 # Add a new columns
                     data_df['app'] = app
                     data_df['psize'] = psize
-                    data_df['sub_ratio'] = psize / DEVICE_SIZE * 100
+                    data_df['sub_ratio'] = psize 
                     data_df['strategy'] = str('-' * len(data_df['label']))
                     #data_df['strategy'] = data_df['strategy'].astype(str)
                     data_df = data_df.sort_values('label').reset_index()
