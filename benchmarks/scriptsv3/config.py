@@ -1,4 +1,4 @@
-ROOT = "/home/najones/test/uvm-eviction"
+ROOT = "/uvm-eviction"
 
 VRAM_SIZE = 12
 

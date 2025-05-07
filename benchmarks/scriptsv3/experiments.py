@@ -147,8 +147,8 @@ class Experiment:
             eprint("exit code:", exit_code)
             
             os.chdir(oldpwd)
-            self.launch_fault_plotting_job(klog, arg)
-        self.launch_fault_scaling_plotting_job(klogs)
+            #self.launch_fault_plotting_job(klog, arg)
+        #self.launch_fault_scaling_plotting_job(klogs)
 
     def launch_fault_plotting_job(self, klog, arg):
         experiment_str = f"{self.kernel_version}_{self.kernel_variant}_{kernel_args_string(self.kernel_args)}{self.get_arg_desc(arg)}"        
