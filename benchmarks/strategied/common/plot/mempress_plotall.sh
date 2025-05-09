@@ -5,7 +5,7 @@ figdir_base=../figures/mempress
 datadir=../figures/raw_data
 method='pref' 'nopf'
 do
-  for bmark in FDTD-2D GRAMSCHM bfs-worst cublas stream 
+  for bmark in FDTD-2D GRAMSCHM bfs-worst sgemm stream 
   do
     lc=$(echo $bmark | tr [:upper:] [:lower:])
     bench=(${base}/$bmark/${lc}_numa_${method}.data)

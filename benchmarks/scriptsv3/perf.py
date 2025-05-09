@@ -18,7 +18,7 @@ def get_experiments(use_subset):
     
     allocs = {"bfs-worst":3,
             "spmv-coo-twitter7":5,
-            "cublas":3 ,
+            "sgemm":3 ,
             "2DCONV":2,
             "2MM":5,
             "3DCONV":2,

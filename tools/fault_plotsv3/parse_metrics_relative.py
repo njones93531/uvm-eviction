@@ -17,7 +17,7 @@ metric_stats_type = 'default'
 kernel_version = 'x86_64-555.42.02'
 DEVICE_SIZE = 11.6
 psizes = [12.0, 15.0, 18.0, 21.0]
-benchmarks = ['FDTD-2D', 'GRAMSCHM', 'stream', 'cublas', 'bfs-worst', 'tealeaf', 'conjugateGradientUM']
+benchmarks = ['FDTD-2D', 'GRAMSCHM', 'stream', 'sgemm', 'bfs-worst', 'tealeaf', 'conjugateGradientUM']
 PAPER_METS = ['app', 'psize', 'label', 'size', 'tr_median_1000', 'ts_rel_median_1000', 'tr_median_1000_OR_ts_rel_median_1000', 'd_mean_1000', 'dc_intra_rel_mean_1', 'dr_intra_mean_1000', 'dr_intra_mean_1', 'tr_mean_1', 'ws_mean_1_OVER_size']
 #Fontsize for radar chart
 base=48 
@@ -30,7 +30,7 @@ enable_RATIO = False
 ENABLE_DR_COMBOS = False
 
 solution = pd.DataFrame({
-        'app': ['bfs-worst', 'cublas', 'FDTD-2D', 'GRAMSCHM', 'stream'],
+        'app': ['bfs-worst', 'sgemm', 'FDTD-2D', 'GRAMSCHM', 'stream'],
         #9.0  : ['ddd', 'ddd', 'ddd', 'ddd', 'ddd'],
         12.0 : ['dhd', 'mdd', 'hdd', 'dmd', 'mdd'],
         15.0 : ['dhd', 'mdd', 'hdd', 'dmd', 'mdd'],
@@ -442,7 +442,7 @@ def compare_pivot_tables(pivot1, pivot2):
     comparison_result.index.name = 'app'
     score = 0
     pp = psizes#[12.0, 15.0]
-    aa = apps#['stream', 'cublas']#'bfs-worst', 'FDTD-2D', 'GRAMSCHM']#'cublas']
+    aa = apps#['stream', 'sgemm']#'bfs-worst', 'FDTD-2D', 'GRAMSCHM']#'sgemm']
     goals = [(12.0, 'FDTD-2D'), (12.0, 'stream'), (15.0, 'FDTD-2D'), (15.0, 'stream')]
     # Iterate through each app and psize and compare the strategy strings
     for app in apps:
@@ -1834,7 +1834,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.subset:
-        benchmarks = ['FDTD-2D', 'stream', 'cublas', 'bfs-worst']
+        benchmarks = ['FDTD-2D', 'stream', 'sgemm', 'bfs-worst']
         psizes = [12.0, 15.0]
     
     #Parse data from external files 

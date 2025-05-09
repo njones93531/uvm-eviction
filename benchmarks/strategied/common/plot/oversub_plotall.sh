@@ -18,7 +18,7 @@ done
 #polybench
 base=../..
 pref=_pref
-for bmark in FDTD-2D GRAMSCHM stream cublas bfs-worst spmv-coo-twitter7
+for bmark in FDTD-2D GRAMSCHM stream sgemm bfs-worst spmv-coo-twitter7
 do
 	lc=$(echo $bmark | tr [:upper:] [:lower:])
 	bench=(${base}/$bmark/${lc}_numa${pref}.data)
