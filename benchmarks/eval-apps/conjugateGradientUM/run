@@ -1,3 +1,0 @@
-#!/bin/bash
-
-numactl --physcpubind=8-15 --preferred=1 ./conjugateGradientUM -s=$1
