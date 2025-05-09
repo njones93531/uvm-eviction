@@ -6,6 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from math import pi
 import heapq
+import config
 from itertools import combinations
 from scipy.stats import chi2_contingency, gmean
 import argparse
@@ -15,8 +16,7 @@ main_directory = '../../figs/voltron/metrics_stats_relative/'
 perf_data_base_dir = '../../benchmarks/strategied'
 metric_stats_type = 'default'
 kernel_version = 'x86_64-555.42.02'
-DEVICE_SIZE = 11.6
-psizes = [12.0, 15.0, 18.0, 21.0]
+psizes = [100, 125, 150, 175]
 benchmarks = ['FDTD-2D', 'GRAMSCHM', 'stream', 'sgemm', 'bfs-worst', 'tealeaf', 'conjugateGradientUM']
 PAPER_METS = ['app', 'psize', 'label', 'size', 'tr_median_1000', 'ts_rel_median_1000', 'tr_median_1000_OR_ts_rel_median_1000', 'd_mean_1000', 'dc_intra_rel_mean_1', 'dr_intra_mean_1000', 'dr_intra_mean_1', 'tr_mean_1', 'ws_mean_1_OVER_size']
 #Fontsize for radar chart
@@ -32,10 +32,10 @@ ENABLE_DR_COMBOS = False
 solution = pd.DataFrame({
         'app': ['bfs-worst', 'sgemm', 'FDTD-2D', 'GRAMSCHM', 'stream'],
         #9.0  : ['ddd', 'ddd', 'ddd', 'ddd', 'ddd'],
-        12.0 : ['dhd', 'mdd', 'hdd', 'dmd', 'mdd'],
-        15.0 : ['dhd', 'mdd', 'hdd', 'dmd', 'mdd'],
-        18.0 : ['hdd', 'mmd', 'hhd', 'dmh', 'dmm'],
-        21.0 : ['hdd', 'mmd', 'hhd', 'dmh', 'dmm']}).set_index('app')
+        100 : ['dhd', 'mdd', 'hdd', 'dmd', 'mdd'],
+        125 : ['dhd', 'mdd', 'hdd', 'dmd', 'mdd'],
+        150 : ['hdd', 'mmd', 'hhd', 'dmh', 'dmm'],
+        175 : ['hdd', 'mmd', 'hhd', 'dmh', 'dmm']}).set_index('app')
     
 
 def parse_perf_df():
@@ -50,6 +50,7 @@ def parse_perf_df():
         dfs.append(data_df)
     # Concatenate all the DataFrames together
     combined_df = pd.concat(dfs, ignore_index=True)
+    combined_df['Problem Size'] = round(100 * combined_df['Problem Size'] / config.VRAM_SIZE)
     print("Finished parsing performance files")
     return combined_df
 
@@ -1835,7 +1836,7 @@ if __name__ == "__main__":
 
     if args.subset:
         benchmarks = ['FDTD-2D', 'stream', 'sgemm', 'bfs-worst']
-        psizes = [12.0, 15.0]
+        psizes = [100, 125]
     
     #Parse data from external files 
     full_df = parse_df()

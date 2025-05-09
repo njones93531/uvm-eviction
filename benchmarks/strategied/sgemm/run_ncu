@@ -1,0 +1,14 @@
+#!/bin/bash
+data=sgemm.ncu.data
+matsizes=$(python3 genSizes.py $1)
+cmd="ncu --metrics pcie__read_bytes.sum,pcie__write_bytes.sum,pcie__read_bytes.sum.per_second,pcie__write_bytes.sum.per_second ./matrixMul2 $matsizes $2 $3 $4 $5 $6 $7 $8 $9"
+#for i in $(seq 0 $ITERS)
+#do
+echo $cmd iter $i >> $data
+echo $1 >> $data
+if timeout $TIMEOUT time 2>> $data $cmd >> $data; then
+	echo "Command did not time out\n" >> $data
+else
+	echo "Command timed out after $TIMEOUT seconds\n" >> $data
+fi
+#done
