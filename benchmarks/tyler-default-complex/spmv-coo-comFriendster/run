@@ -1,6 +1,0 @@
-#!/bin/bash
-if timeout $TIMEOUT ./spmv_coo /home/share/cusparse_graphs/com-Friendster.mtx ; then
-	echo "Command did not time out\n"
-else
-	echo "Command timed out after $TIMEOUT seconds\n"
-fi

@@ -1,4 +1,0 @@
-#!/bin/bash
-
-cp tea$1.in tea.in
-./tealeaf

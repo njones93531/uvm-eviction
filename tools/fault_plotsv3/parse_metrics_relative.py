@@ -14,9 +14,10 @@ import argparse
 main_directory = '../../figs/voltron/metrics_stats_relative/'
 perf_data_base_dir = '../../benchmarks/strategied'
 metric_stats_type = 'default'
+kernel_version = 'x86_64-555.42.02'
 DEVICE_SIZE = 11.6
 psizes = [12.0, 15.0, 18.0, 21.0]
-benchmarks = ['FDTD-2D', 'GRAMSCHM', 'stream', 'cublas', 'bfs-worst']
+benchmarks = ['FDTD-2D', 'GRAMSCHM', 'stream', 'cublas', 'bfs-worst', 'tealeaf', 'conjugateGradientUM']
 PAPER_METS = ['app', 'psize', 'label', 'size', 'tr_median_1000', 'ts_rel_median_1000', 'tr_median_1000_OR_ts_rel_median_1000', 'd_mean_1000', 'dc_intra_rel_mean_1', 'dr_intra_mean_1000', 'dr_intra_mean_1', 'tr_mean_1', 'ws_mean_1_OVER_size']
 #Fontsize for radar chart
 base=48 
@@ -1629,8 +1630,8 @@ def make_all_perf_barchart(csv_file):
     plt.tight_layout()
     
     # Show the plot
-    os.makedirs(f"../../figs/voltron/performance_comparison/", exist_ok=True)
-    plt.savefig(f"../../figs/voltron/performance_comparison/all_avg_bar.png")
+    os.makedirs(f"../../figs/voltron/perf_comparison/", exist_ok=True)
+    plt.savefig(f'../../figs/voltron/perf_comparison/default_{kernel_version}_vanilla_geomean_each.png')
     plt.close()
 
 
@@ -1670,8 +1671,8 @@ def make_perf_barchart(csv_file):
         plt.grid(axis='y', linestyle='--', alpha=0.7)
 
         # Show the plot
-        os.makedirs(f"../../figs/voltron/performance_comparison/{row['app']}", exist_ok=True)
-        plt.savefig(f"../../figs/voltron/performance_comparison/{row['app']}/{row['app']}_{row['psize']}.png")
+        os.makedirs(f"../../figs/voltron/perf_comparison/{row['app']}", exist_ok=True)
+        plt.savefig(f"../../figs/voltron/perf_comparison/{row['app']}/{row['app']}_{row['psize']}.png")
         plt.close()
 
     #Avg Barchart 
@@ -1708,8 +1709,8 @@ def make_perf_barchart(csv_file):
 
     # Show the plot
     plt.tight_layout()
-    os.makedirs(f"../../figs/voltron/performance_comparison/", exist_ok=True)
-    plt.savefig(f"../../figs/voltron/performance_comparison/avg_bars.png")
+    os.makedirs(f"../../figs/voltron/perf_comparison/", exist_ok=True)
+    plt.savefig(f'../../figs/voltron/perf_comparison/default_{kernel_version}_vanilla_geomean_all.png')
     plt.close()
     
 
@@ -1760,8 +1761,8 @@ def make_accuracy_plot(csv_file):
     plt.grid(True)
     plt.legend(title="Strategy", fontsize=18, title_fontsize=18)#, loc='lower center', bbox_to_anchor=(0.5, 1.1), ncol=5, columnspacing=0.5, handletextpad=0.25)
     plt.tight_layout()
-    os.makedirs(f"../../figs/voltron/performance_comparison/", exist_ok=True)
-    plt.savefig(f"../../figs/voltron/performance_comparison/accuracy.png")
+    os.makedirs(f"../../figs/voltron/perf_comparison/", exist_ok=True)
+    plt.savefig(f'../../figs/voltron/perf_comparison/default_{kernel_version}_vanilla_slowdown_all.png')
     plt.close()
 
    
@@ -1822,7 +1823,7 @@ def radar_plot(df):
         #plt.suptitle(f'App: {app}, Psize: {psize}', fontsize=base+4)
         plt.tight_layout(pad=1.6, rect=[0, -0.06, 1, 1.06])
         os.makedirs("../../figs/voltron/metrics_stats_relative_radar/", exist_ok=True)
-        plt.savefig(f'../../figs/voltron/metrics_stats_relative_radar/radar_{app}_{psize}.png')
+        plt.savefig(f'../../figs/voltron/metrics_radar/default_{kernel_version}_faults-new_{psize}_{app}.png')
         plt.close(fig)
 
 

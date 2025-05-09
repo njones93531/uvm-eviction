@@ -1,6 +1,0 @@
-#!/bin/bash
-if timeout $TIMEOUT ./atax.exe $1 $2 ; then
-	echo "Command did not time out\n"
-else
-	echo "Command timed out after $TIMEOUT seconds\n"
-fi

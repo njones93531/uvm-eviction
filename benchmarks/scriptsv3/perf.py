@@ -49,11 +49,17 @@ def get_experiments(use_subset):
         benchmark_dir = bdir_dict[benchmark]
         kernel_args = {}
         nallocs = allocs[benchmark]
+        policy_list = [''.join(combination) for combination in itertools.product(['m', 'h', 'd'], repeat=nallocs)]
 
         #assemble policy list
-        policy_list = [''.join(combination) for combination in itertools.product(['m', 'h', 'd'], repeat=nallocs)]
+        if benchmark == 'tealeaf':
+            policy_list = ["ddmdddmmddmmddmmmmmm", "mmmmmmmmmmmmmmmmmmmm", "hhhhhhhhhhhhhhhhhhhh", "dddddmddddddddmmmmmm", "dmmdddmmdmmmdmmmmmmm", "dmmdddmmdmmmmmmmmmmm", "dddddhddddddddhhhhhh", "ddhdddhhddhhddhhhhhh", "dhhdddhhdhhhdhhhhhhh", "dhhdddhhdhhhhhhhhhhh", "dddddmddddddddmmmmmm", "ddddmdmmdmdddmmmmmmm", "dddmmmmmddmmdmmmmmmm", "dmdmdmmmdmdmmmmmmmmm"]
+        if benchmark == 'conjugateGradientUM':
+            policy_list = ["mmmmmmmmm", "hhhhhhhhh", "ddddhdddd", "ddhdhdddd", "dhhdhdddd", "dhhdhdddd", "ddddmdddd", "ddmdmdddd", "dmmdmdddd", "dmmdmdddd", "ddddhdddd", "dmddhdddd", "mdhdhdddd", "dmhdhdddd"]
+
         experiments.append(Experiment(benchmark, benchmark_exe, benchmark_dir, psizes, policy_list, benchmark_dir,\
                                       kernel_version, kernel_variant, kernel_args))
+
 
     return experiments
 
