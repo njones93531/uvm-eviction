@@ -51,6 +51,10 @@ def init_syslogger(logfile):
             print("/dev/hpcs_logger still does not exist after 10 seconds; check dmesg for errors")
             sys.exit(1)
         time.sleep(1)
+    oldpwd = os.getcwd()
+    os.chdir(config.SYSLOG_PATH)
+    sh.make()
+    os.chdir(oldpwd)
     process = subprocess.Popen([f"{config.SYSLOG_PATH}/{config.SYSLOG_EXE}", logfile])#, creationflags=subprocess.DETACHED_PROCESS)
     return process
 

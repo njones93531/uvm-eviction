@@ -6,7 +6,7 @@ BENCHDIR = f"{ROOT}/benchmarks"
 DRIVER_DIR=f"{ROOT}/drivers"
 SYSLOG_PATH=f"{ROOT}/tools/sysloggerv2"
 SYSLOG_EXE=f"log"
-WARMUP_DIR=f"{ROOT}/benchmarks/scripts"
+WARMUP_DIR=f"{ROOT}/benchmarks/scriptsv3"
 WARMUP_EXE="warmup"
 WARMUP_ENABLED=False
 
