@@ -7,9 +7,11 @@ import heapq
 from itertools import combinations
 from scipy.stats import chi2_contingency, gmean
 import argparse
+import socket
 
 # Define the path to the main directory
 perf_data_base_dir = '../../benchmarks/strategied'
+hostname=socket.gethostname()
 
 def parse_perf_df():
     bmark = 'MVT'
@@ -30,8 +32,8 @@ def parse_perf_df():
     plt.ylabel('Kernel Time')
     plt.grid(True)
     plt.tight_layout()
-    os.makedirs(f"../../figs/voltron/oversub/", exist_ok=True)
-    plt.savefig(f'../../figs/voltron/oversub/strategied_x86_64-555.42.02_faults-new_mvt.png')
+    os.makedirs(f"../../figs/{hostname}/oversub/", exist_ok=True)
+    plt.savefig(f'../../figs/{hostname}/oversub/strategied_x86_64-555.42.02_faults-new_mvt.png')
     plt.close()
 
 parse_perf_df()

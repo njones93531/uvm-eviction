@@ -14,7 +14,7 @@ fi
 
 docker  build . -t cuda-container
 
-docker run --name cuda-container --privileged=true -it --gpus all --ipc=host \
+docker run --hostname=cuda-host --privileged=true -it --gpus all --ipc=host \
   --ulimit memlock=-1 --ulimit stack=67108864 --rm  \
   -v `pwd`/../:/uvm-eviction -w /uvm-eviction \
   -v /lib/modules/$(uname -r)/build:/lib/modules/$(uname -r)/build \

@@ -39,7 +39,7 @@ def main():
         raise Exception(f"Fatal Error: The file {config_file} was not found.")
     except json.JSONDecodeError:
         raise Exception("Fatal Error: The file is not a valid JSON.")
-    
+   
     print_enabled_plots(config)
     # Execute plots based on the configuration
     for plot_name, should_plot in config.items():
@@ -47,7 +47,7 @@ def main():
             print()
             print("############")
             print(f"Starting {plot_name}")
-            metric_plot_functions_dict[plot_name](df_faults, df_prefetch, df_evictions, df_address_ranges, output_state, args.plot_end, args.output_dir, psize)
+            metric_plot_functions_dict[plot_name](df_faults, df_prefetch, df_evictions, df_address_ranges, output_state, args.plot_end, args.output_dir)
             print(f"Finished {plot_name}")
             print("############")
             print()

@@ -8,9 +8,11 @@ import config
 from itertools import combinations
 from scipy.stats import chi2_contingency, gmean
 import argparse
+import socket
 
 # Define the path to the main directory
-main_directory = '../../figs/voltron/metrics_stats_relative/'
+hostname=socket.gethostname()
+main_directory = '../../figs/{hostname}/metrics_stats_relative/'
 perf_data_base_dir = '../../benchmarks/strategied'
 metric_stats_type = 'default'
 kernel_version = 'x86_64-555.42.02'
@@ -1086,7 +1088,7 @@ def get_corr_matrix(data_df, p=False):
         if(p):
             plt.figure(figsize=(16, 12))
             sns.heatmap(corr_matrix_d, annot=True, cmap='coolwarm', cbar=True)
-            plt.savefig('/home/najones/uvm-eviction/figs/voltron/correlation_matrix_x.png')
+            plt.savefig('/home/najones/uvm-eviction/figs/{hostname}/correlation_matrix_x.png')
 
 
     #Refine parameters
@@ -1097,7 +1099,7 @@ def get_corr_matrix(data_df, p=False):
         if(p):
             plt.figure(figsize=(16, 12))
             sns.heatmap(corr_matrix_d, annot=True, cmap='coolwarm', cbar=True)
-            plt.savefig('/home/najones/uvm-eviction/figs/voltron/correlation_matrix_d.png')
+            plt.savefig('/home/najones/uvm-eviction/figs/{hostname}/correlation_matrix_d.png')
 
     #Now do the h vs m columns, after d is eliminated
     data_df = data_df[data_df['d'] == False]
@@ -1110,7 +1112,7 @@ def get_corr_matrix(data_df, p=False):
         if(p):
             plt.figure(figsize=(16, 12))
             sns.heatmap(corr_matrix_hm, annot=True, cmap='coolwarm', cbar=True)
-            plt.savefig('/home/najones/uvm-eviction/figs/voltron/correlation_matrix_hm.png')
+            plt.savefig('/home/najones/uvm-eviction/figs/{hostname}/correlation_matrix_hm.png')
     return corr_matrix_d, corr_matrix_hm, corr_matrix_x
 
 def select_columns_with_strong_relationship(corr_matrix, column_name, max_cols=5, threshold=0.9):
@@ -1167,11 +1169,11 @@ def get_smallest_corr_matrix(data_df):
 
     plt.figure(figsize=(8, 6))
     sns.heatmap(corr_matrix_d, annot=True, cmap='coolwarm', cbar=True)
-    plt.savefig('/home/najones/uvm-eviction/figs/voltron/small_correlation_matrix_metrics_d.png')
+    plt.savefig('/home/najones/uvm-eviction/figs/{hostname}/small_correlation_matrix_metrics_d.png')
     
     plt.figure(figsize=(8, 6))
     sns.heatmap(corr_matrix_hm, annot=True, cmap='coolwarm', cbar=True)
-    plt.savefig('/home/najones/uvm-eviction/figs/voltron/small_correlation_matrix_metrics_hm.png')
+    plt.savefig('/home/najones/uvm-eviction/figs/{hostname}/small_correlation_matrix_metrics_hm.png')
 
 def brute_force_metrics_vs_d(data_df, metrics=[], perf_df=pd.DataFrame(), p=False):
     #Drop unrelated, nonnumeric, and/or constant columns
@@ -1629,8 +1631,8 @@ def make_all_perf_barchart(csv_file):
     plt.tight_layout()
     
     # Show the plot
-    os.makedirs(f"../../figs/voltron/perf_comparison/", exist_ok=True)
-    plt.savefig(f'../../figs/voltron/perf_comparison/default_{kernel_version}_vanilla_geomean_each.png')
+    os.makedirs(f"../../figs/{hostname}/perf_comparison/", exist_ok=True)
+    plt.savefig(f'../../figs/{hostname}/perf_comparison/default_{kernel_version}_vanilla_geomean_each.png')
     plt.close()
 
 
@@ -1670,8 +1672,8 @@ def make_perf_barchart(csv_file):
         plt.grid(axis='y', linestyle='--', alpha=0.7)
 
         # Show the plot
-        os.makedirs(f"../../figs/voltron/perf_comparison/{row['app']}", exist_ok=True)
-        plt.savefig(f"../../figs/voltron/perf_comparison/{row['app']}/{row['app']}_{row['psize']}.png")
+        os.makedirs(f"../../figs/{hostname}/perf_comparison/{row['app']}", exist_ok=True)
+        plt.savefig(f"../../figs/{hostname}/perf_comparison/{row['app']}/{row['app']}_{row['psize']}.png")
         plt.close()
 
     #Avg Barchart 
@@ -1708,8 +1710,8 @@ def make_perf_barchart(csv_file):
 
     # Show the plot
     plt.tight_layout()
-    os.makedirs(f"../../figs/voltron/perf_comparison/", exist_ok=True)
-    plt.savefig(f'../../figs/voltron/perf_comparison/default_{kernel_version}_vanilla_geomean_all.png')
+    os.makedirs(f"../../figs/{hostname}/perf_comparison/", exist_ok=True)
+    plt.savefig(f'../../figs/{hostname}/perf_comparison/default_{kernel_version}_vanilla_geomean_all.png')
     plt.close()
     
 
@@ -1760,8 +1762,8 @@ def make_accuracy_plot(csv_file):
     plt.grid(True)
     plt.legend(title="Strategy", fontsize=18, title_fontsize=18)#, loc='lower center', bbox_to_anchor=(0.5, 1.1), ncol=5, columnspacing=0.5, handletextpad=0.25)
     plt.tight_layout()
-    os.makedirs(f"../../figs/voltron/perf_comparison/", exist_ok=True)
-    plt.savefig(f'../../figs/voltron/perf_comparison/default_{kernel_version}_vanilla_slowdown_all.png')
+    os.makedirs(f"../../figs/{hostname}/perf_comparison/", exist_ok=True)
+    plt.savefig(f'../../figs/{hostname}/perf_comparison/default_{kernel_version}_vanilla_slowdown_all.png')
     plt.close()
 
    
@@ -1821,8 +1823,8 @@ def radar_plot(df):
         
         #plt.suptitle(f'App: {app}, Psize: {psize}', fontsize=base+4)
         plt.tight_layout(pad=1.6, rect=[0, -0.06, 1, 1.06])
-        os.makedirs("../../figs/voltron/metrics_stats_relative_radar/", exist_ok=True)
-        plt.savefig(f'../../figs/voltron/metrics_radar/default_{kernel_version}_faults-new_{psize}_{app}.png')
+        os.makedirs("../../figs/{hostname}/metrics_stats_relative_radar/", exist_ok=True)
+        plt.savefig(f'../../figs/{hostname}/metrics_radar/default_{kernel_version}_faults-new_{psize}_{app}.png')
         plt.close(fig)
 
 
