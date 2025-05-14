@@ -12,7 +12,8 @@ import socket
 
 # Define the path to the main directory
 hostname=socket.gethostname()
-main_directory = '../../figs/{hostname}/metrics_stats_relative/'
+main_directory = f'../../figs/{hostname}/metrics_stats_relative/'
+print(f"Main Directory: {main_directory}")
 perf_data_base_dir = '../../benchmarks/strategied'
 metric_stats_type = 'default'
 kernel_version = 'x86_64-555.42.02'
@@ -484,7 +485,7 @@ def parse_df():
                 app = str(file).split('_')[-1].split('.')[0]
                 psize = float(str(file).split('_')[-2])
                 
-                if app not in ['tealeaf', 'spmv-coo-twitter7', 'GEMM'] and 'nopf' not in file and psize != 9.0: #Ignore spmv for now (const psize)
+                if app not in ['spmv-coo-twitter7', 'GEMM'] and 'nopf' not in file and psize != 9.0: #Ignore spmv for now (const psize)
                 # Add a new columns
                     data_df['app'] = app
                     data_df['psize'] = psize
@@ -1819,11 +1820,11 @@ def radar_plot(df):
             column_labels = [r'$\hat{S_{[1000]}}$', r'$\overline{S}$', r'$\hat D$', r'$\overline{\mbox{fdup}}$', r"$\hat{\mbox{fdup}}$", r'$\hat{S_{[1]}}$']
             subset = group[group["label"] == label]
             mean_values = [max(e, 10e-6) for e in subset[columns].mean().tolist()]
-            make_radar_chart(ax, column_labels, mean_values, title=f'{label.split(".")[0].lower()}\%')
+            make_radar_chart(ax, column_labels, mean_values, title=f'{label.split(".")[0].lower()}\\%')
         
         #plt.suptitle(f'App: {app}, Psize: {psize}', fontsize=base+4)
         plt.tight_layout(pad=1.6, rect=[0, -0.06, 1, 1.06])
-        os.makedirs("../../figs/{hostname}/metrics_stats_relative_radar/", exist_ok=True)
+        os.makedirs(f"../../figs/{hostname}/metrics_radar/", exist_ok=True)
         plt.savefig(f'../../figs/{hostname}/metrics_radar/default_{kernel_version}_faults-new_{psize}_{app}.png')
         plt.close(fig)
 
