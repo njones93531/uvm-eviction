@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd ../benchmarks/strategied/common/plot/
-python3 perf_data2csv.py
+./csv_all.sh
 cd - 
 
 cd ../tools/fault_plotsv3/
