@@ -26,5 +26,5 @@ export CXX=g++-12
 echo "Environment complete" 
 
 
-
+umask 000
 exec "$@"
