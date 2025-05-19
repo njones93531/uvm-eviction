@@ -3,6 +3,7 @@ ROOT = "/uvm-eviction"
 VRAM_SIZE = 12
 
 BENCHDIR = f"{ROOT}/benchmarks"
+SCRIPTSDIR = f"{BENCHDIR/scriptsv3}"
 DRIVER_DIR=f"{ROOT}/drivers"
 SYSLOG_PATH=f"{ROOT}/tools/sysloggerv2"
 SYSLOG_EXE=f"log"

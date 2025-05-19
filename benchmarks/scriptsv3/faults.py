@@ -60,7 +60,8 @@ def main():
     with open("slurm_out/faults_benchmark_times.txt", "w") as f:
         for experiment in experiments:
             start_time = time.perf_counter_ns()
-            experiment.run(clear=True)
+            #experiment.run(clear=True)
+            experiment.print()
             end_time = time.perf_counter_ns()
             duration_ns = end_time - start_time
             duration_sec = duration_ns / 1e9  # Convert nanoseconds to seconds

@@ -10,7 +10,7 @@ import config
 
 from copy import deepcopy
 
-slurm_output_directory = f'{config.BENCHDIR}/scriptsv2/fault_plot_out/'
+slurm_output_directory = f'{config.BENCHDIR}/{config.SCRIPTSDIR}/fault_plot_out/'
 # Ensure the output directory exists
 os.makedirs(slurm_output_directory, exist_ok=True)
 
