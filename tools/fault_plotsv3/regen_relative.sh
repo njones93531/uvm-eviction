@@ -1,5 +1,6 @@
 #!/bin/bash -x
 
+date=$(date +"%Y-%m-%d-%H-%M-%S")
 KB_per_GB=1000000
 total_kb=$(grep MemTotal /proc/meminfo | awk '{print $2}')
 total_gb=$((total_kb / $KB_per_GB))
@@ -21,7 +22,7 @@ for size_GB in $((23 * $total_gb / 100)) $((45 * $total_gb / 100)) $((95 * $tota
     done
 
     if [ "$found" != true ]; then
-      job_name="${resubmit_prefix}plot_$(basename $(dirname "$log"))"
+      job_name="${resubmit_prefix}plot_${date}_$(basename $(dirname "$log"))"
       log_dir="slurm_out"
       mkdir -p "$log_dir"
       slurm_file="${log_dir}/${job_name}.out"
