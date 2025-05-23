@@ -1,0 +1,7 @@
+{
+    "plot_absolute_metrics_relative_order": false,
+    "plot_relative_metrics_relative_order": false,
+    "print_absolute_metrics_relative_order": false,
+    "print_relative_metrics_relative_order": true,
+    "plot_relative_metrics_relative_order_radar": false
+}
