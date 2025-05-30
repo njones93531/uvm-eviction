@@ -21,12 +21,18 @@ def parse_perf_df():
     data_df = pd.read_csv(bench)
     data_df['app'] = bmark
     data_df = data_df.drop(columns=['Iteration'])
+    
+    #If multiple data, take the average
+    data_df['Kernel Time'] = data_df.groupby('Problem Size')['Kernel Time'].transform('mean')
+    data_df = data_df.drop_duplicates(subset=['Problem Size'])
+    data_df = data_df.sort_values('Problem Size')
 
+
+    plt.figure(figsize=(10, 6))
     plt.plot(data_df['Problem Size'], data_df['Kernel Time'])
     # Plot
     textsize = 24
     plt.rcParams.update({'font.size': textsize})
-    plt.figure(figsize=(10, 6))
     
     plt.xlabel('Problem Size')
     plt.ylabel('Kernel Time')

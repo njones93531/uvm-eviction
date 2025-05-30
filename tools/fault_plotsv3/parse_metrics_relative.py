@@ -485,7 +485,7 @@ def parse_df():
                 app = str(file).split('_')[-1].split('.')[0]
                 psize = float(str(file).split('_')[-2])
                 
-                if app not in ['spmv-coo-twitter7', 'GEMM'] and 'nopf' not in file and psize != 9.0: #Ignore spmv for now (const psize)
+                if app not in ['spmv-coo-twitter7', 'GEMM'] and 'nopf' not in file and psize != 75.0: #Ignore spmv for now (const psize)
                 # Add a new columns
                     data_df['app'] = app
                     data_df['psize'] = psize
@@ -494,11 +494,11 @@ def parse_df():
                     #data_df['strategy'] = data_df['strategy'].astype(str)
                     data_df = data_df.sort_values('label').reset_index()
                     data_df['alloc'] = data_df.index
-                    data_df['strat'] = list(solution[psize][app]) 
-                    data_df['d'] = data_df['strat'] == 'd'
-                    data_df['m'] = data_df['strat'] == 'm'
-                    data_df['h'] = data_df['strat'] == 'h'
-                    data_df['x'] = (app == "FDTD-2D") or (app == "stream")
+                    #data_df['strat'] = list(solution[psize][app]) 
+                    #data_df['d'] = data_df['strat'] == 'd'
+                    #data_df['m'] = data_df['strat'] == 'm'
+                    #data_df['h'] = data_df['strat'] == 'h'
+                    #data_df['x'] = (app == "FDTD-2D") or (app == "stream")
                     #data_df['space_taken_by_placement'] = data_df['d'].astype(float) * data_df['size'] / 100.0
                     #data_df['space_taken_by_placement'] = data_df['space_taken_by_placement'].sum()
                     #data_df['space_remaining'] = 1 - data_df['space_taken_by_placement']
