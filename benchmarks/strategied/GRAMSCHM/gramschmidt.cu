@@ -168,7 +168,7 @@ __global__ void gramschmidt_kernel3(DATA_TYPE *a, DATA_TYPE *r, DATA_TYPE *q, in
 }
 
 
-void gramschmidtCuda(DATA_TYPE* A_gpu, DATA_TYPE* R_gpu, DATA_TYPE* Q_gpu)
+void gramschmidtCuda(DATA_TYPE* A_gpu, DATA_TYPE* R_gpu, DATA_TYPE* Q_gpu, double timeout)
 {
 	double t_start, t_end;
 	size_t k;
@@ -187,6 +187,9 @@ void gramschmidtCuda(DATA_TYPE* A_gpu, DATA_TYPE* R_gpu, DATA_TYPE* Q_gpu)
 		CUDA_CHECK(cudaDeviceSynchronize());
 		gramschmidt_kernel3<<<gridKernel3,block>>>(A_gpu, R_gpu, Q_gpu, k, PSIZE);
 		CUDA_CHECK(cudaDeviceSynchronize());
+		
+		if(timeout > 0 && rtclock() - t_start > timeout)
+			break;
 	}
 	t_end = rtclock();
 	fprintf(stdout, "GPU Runtime: %0.6lfs\n", t_end - t_start);
@@ -209,13 +212,21 @@ int main(int argc, char *argv[])
         else{
                 PSIZE = 2048;
         }
+	
+	
+
         //printf("PSIZE: %zu\n", PSIZE);
         printf("Problem size: %.2f GB\n", ((((double)(PSIZE * PSIZE * 3)) * 4)/(1024. * 1024. * 1024.)));
         int cpu = 0;
         if(argc >= 3)
                 cpu = atoi(argv[2]);	
 
-
+	//Set timeout 
+	double timeout = -1;
+	if(argc>=4){
+		timeout = atof(argv[3]);
+		printf("Running gramschm with timeout of %.0f seconds\n", timeout);
+	}
 
 	double t_start, t_end;
 
@@ -241,7 +252,7 @@ int main(int argc, char *argv[])
 	acp.setAllocationPolicy((void**)&Q_gpu, sizeof(DATA_TYPE) * M * N, 2, argc, argv);
 
 	
-	gramschmidtCuda(A_gpu, R_gpu, Q_gpu);
+	gramschmidtCuda(A_gpu, R_gpu, Q_gpu, timeout);
 	
 	if(cpu){
         A = (DATA_TYPE*)malloc(M*N*sizeof(DATA_TYPE));
