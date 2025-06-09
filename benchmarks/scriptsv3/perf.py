@@ -71,6 +71,7 @@ def get_experiments(use_subset):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--subset", action="store_true", help="Only compute a representative subset of data")
+    parser.add_argument("-t", "--timeout", help="Adds a time limit to each experiment", default=0)
 
     args = parser.parse_args()
 
@@ -80,7 +81,10 @@ def main():
     for experiment in experiments:
         #experiment.print_exp()
         print(experiment)
-        experiment.run()
+        if int(args.timeout) > 0:
+            experiment.run(timeout=args.timeout)
+        else:
+            experiment.run()
 
 if __name__ == "__main__":
     main()

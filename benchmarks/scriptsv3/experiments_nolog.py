@@ -121,7 +121,7 @@ class Experiment:
             print("Finished", logdir_base)
             return execution_time
 
-    def run(self, clear=False):
+    def run(self, clear=False, timeout=1000000000):
         for psize in self.psizes:
             print(f"Starting Experiment Set {self.benchmark} {psize}")
             local_policies = self.policies.copy()
@@ -136,7 +136,7 @@ class Experiment:
             baseline = self._run(clear, psize, policy)
             print(f"Experiment set {self.benchmark} {psize}: Measured baseline execution {target} at {baseline} seconds. Using {2 * baseline} as timeout for remaining experiments.")
             for policy in local_policies:
-                self._run(clear, psize, policy, 2 * baseline)
+                self._run(clear, psize, policy, min(2 * baseline, int(timeout)))
 
 
 #print("building warmup app")
