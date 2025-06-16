@@ -15,6 +15,7 @@ if [ $use_timeout -eq 1 ]; then
     echo "Command timed out after $TIMEOUT seconds\n" >> $data
   fi
 else
+  echo $out >> $data
   numactl --cpunodebind=0 --preferred=1 $cmd >> $data
 fi
 
