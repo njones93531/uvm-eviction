@@ -494,10 +494,12 @@ def parse_df():
                     #data_df['strategy'] = data_df['strategy'].astype(str)
                     data_df = data_df.sort_values('label').reset_index()
                     data_df['alloc'] = data_df.index
-                    #data_df['strat'] = list(solution[psize][app]) 
-                    #data_df['d'] = data_df['strat'] == 'd'
-                    #data_df['m'] = data_df['strat'] == 'm'
-                    #data_df['h'] = data_df['strat'] == 'h'
+                    data_df['strat'] = ''
+                    if solution[psize][app]:
+                        data_df['strat'] = solution[psize][app]
+                    data_df['d'] = data_df['strat'] == 'd'
+                    data_df['m'] = data_df['strat'] == 'm'
+                    data_df['h'] = data_df['strat'] == 'h'
                     #data_df['x'] = (app == "FDTD-2D") or (app == "stream")
                     #data_df['space_taken_by_placement'] = data_df['d'].astype(float) * data_df['size'] / 100.0
                     #data_df['space_taken_by_placement'] = data_df['space_taken_by_placement'].sum()
