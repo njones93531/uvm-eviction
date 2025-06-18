@@ -1,6 +1,7 @@
 #!/bin/bash
 
-./genfaults-subset.sh       #Estimated  3 hours
-./evaluate-perf-subset.sh   #Estimated  6 hours
-./process-faults-subset.sh  #Estimated <1 hours
-./process-perf-subset.sh    #Estimated <1 hours
+TIMEOUT=1200
+./genfaults.sh -s -t $TIMEOUT 	#Estimated  3 hours
+./evaluate-perf.sh -s -t $TIMEOUT  #Estimated  6 hours
+./process-faults.sh -s -t $TIMEOUT #Estimated <1 hours
+./process-perf.sh -s -t $TIMEOUT   #Estimated <1 hours

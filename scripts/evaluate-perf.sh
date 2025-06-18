@@ -1,8 +1,21 @@
 #!/bin/bash
-
 cd ../benchmarks/scriptsv3/
 
-export TIMEOUT=12000
-python3 -u perf.py -t $TIMEOUT
-python3 -u mvt-example.py -t $TIMEOUT
+TIMEOUT=12000
+SUBSET=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -t) TIMEOUT="$2"; shift 2 ;;
+    -s|--subset) SUBSET=1; shift ;;
+    *) echo "Unknown option: $1"; exit 1 ;;
+  esac
+done
+
+[[ -n "$TIMEOUT" ]] && export TIMEOUT=$TIMEOUT
+[[ -n "$SUBSET" ]] && ARGS="-s"
+
+python3 -u perf.py -t $TIMEOUT $ARGS
+[[ -z "$SUBSET" ]] && python3 -u mvt-example.py
+
 
