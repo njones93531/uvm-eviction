@@ -493,6 +493,10 @@ void parseArguments(int argc, char *argv[])
     {
       output_as_csv = true;
     }
+    else if (!std::string("-p").compare(argv[i]))
+    {
+      i++;
+    }
     else if (!std::string("--help").compare(argv[i]) ||
              !std::string("-h").compare(argv[i]))
     {
