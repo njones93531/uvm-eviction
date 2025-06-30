@@ -495,7 +495,7 @@ def parse_df():
                     data_df = data_df.sort_values('label').reset_index()
                     data_df['alloc'] = data_df.index
                     data_df['strat'] = ''
-                    if solution[psize][app]:
+                    if psize in solution.index and app in solution.columns:
                         data_df['strat'] = solution[psize][app]
                     data_df['d'] = data_df['strat'] == 'd'
                     data_df['m'] = data_df['strat'] == 'm'

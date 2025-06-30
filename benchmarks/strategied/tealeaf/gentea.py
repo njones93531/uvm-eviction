@@ -1,0 +1,47 @@
+import sys
+
+def main():
+    psize = int(sys.argv[1])
+    x_cells = int((-5.8822 * psize * psize) + (515.983 * psize) + 3586)
+    y_cells = x_cells
+
+    content = f"""*tea
+state 1 density=100.0 energy=0.0001
+state 2 density=0.1 energy=25.0 geometry=rectangle xmin=0.0 xmax=1.0 ymin=1.0 ymax=2.0
+state 3 density=0.1 energy=0.1 geometry=rectangle xmin=1.0 xmax=6.0 ymin=1.0 ymax=2.0
+state 4 density=0.1 energy=0.1 geometry=rectangle xmin=5.0 xmax=6.0 ymin=1.0 ymax=8.0
+state 5 density=0.1 energy=0.1 geometry=rectangle xmin=5.0 xmax=10.0 ymin=7.0 ymax=8.0
+
+xmin                = 0.0
+ymin                = 0.0
+xmax                = 10.0
+ymax                = 10.0
+x_cells             = {x_cells}
+y_cells             = {y_cells}
+
+use_cg
+use_c_kernels
+check_result
+
+eps                 = 1.0e-15
+max_iters           = 5000
+
+initial_timestep    = 0.004
+end_step            = 5
+end_time            = 100.0
+
+halo_depth          = 2
+num_chunks_per_rank = 1
+
+ppcg_inner_steps    = 350
+epslim              = 0.0001
+presteps            = 20
+
+*endtea
+"""
+    with open("tea.in", "w") as f:
+        f.write(content)
+
+if __name__ == "__main__":
+    main()
+
