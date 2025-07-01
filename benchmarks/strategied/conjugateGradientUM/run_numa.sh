@@ -1,7 +1,7 @@
 #!/bin/bash -xe
 
-logbase=congrad
+logbase=conjugategradientum
 exe=./conjugateGradientUM
 cmd="$exe -s=$1 ${@:2}"
-out=$cmd
+out="$exe $1 ${@:2}"
 ../common/numa_exp.sh $logbase "$cmd" "$out"
