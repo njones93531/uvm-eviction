@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-logbase=conjugategradientum
+logbase=cg
 exe=./conjugateGradientUM
 cmd="$exe -s=$1 ${@:2}"
 out="$exe $1 ${@:2}"

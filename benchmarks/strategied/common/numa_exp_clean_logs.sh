@@ -3,7 +3,7 @@
 
 for method in 'pref' 'nopf'
 do
-  for bmark in FDTD-2D GRAMSCHM bfs-worst sgemm stream MVT tealeaf conjugateGradientUM
+  for bmark in FDTD-2D GRAMSCHM bfs-worst sgemm stream MVT tealeaf cg
   do
     lc=$(echo $bmark | tr [:upper:] [:lower:])
     datalog=(../$bmark/${lc}_numa_${method}.data)

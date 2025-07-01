@@ -266,7 +266,7 @@ int main(int argc, char **argv) {
   double msec = GetTimer();
 
   printf("Final residual: %e\n", sqrt(r1));
-  printf("GPU Time: %.2fs\n", msec/1000.);
+  printf("GPU Runtime: %.2fs\n", msec/1000.);
   fprintf(stdout, "&&&& conjugateGradientUM %s\n",
           (sqrt(r1) < tol) ? "PASSED" : "FAILED");
 
@@ -311,7 +311,7 @@ int main(int argc, char **argv) {
   cudaFree(p);
   cudaFree(Ax);
 
-  printf("Test Summary:  Error amount = %f, result = %s\n", err,
+  printf("Test Summary:  Err Amt = %f, result = %s\n", err,
          (k <= max_iter) ? "SUCCESS" : "FAILURE");
   exit((k <= max_iter) ? EXIT_SUCCESS : EXIT_FAILURE);
 }

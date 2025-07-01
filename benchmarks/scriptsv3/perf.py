@@ -32,7 +32,7 @@ def get_experiments(use_subset):
             "MVT":5,
             "nw":2,
             "stream":3,
-            "conjugateGradientUM":9,
+            "cg":9,
             "tealeaf":20,
     }
     
@@ -56,7 +56,7 @@ def get_experiments(use_subset):
         #assemble policy list
         if benchmark == 'tealeaf':
             policy_list = ["ddmdddmmddmmddmmmmmm", "mmmmmmmmmmmmmmmmmmmm", "hhhhhhhhhhhhhhhhhhhh", "dddddmddddddddmmmmmm", "dmmdddmmdmmmdmmmmmmm", "dmmdddmmdmmmmmmmmmmm", "dddddhddddddddhhhhhh", "ddhdddhhddhhddhhhhhh", "dhhdddhhdhhhdhhhhhhh", "dhhdddhhdhhhhhhhhhhh", "dddddmddddddddmmmmmm", "ddddmdmmdmdddmmmmmmm", "dddmmmmmddmmdmmmmmmm", "dmdmdmmmdmdmmmmmmmmm"]
-        elif benchmark == 'conjugateGradientUM':
+        elif benchmark == 'cg':
             policy_list = ["mmmmmmmmm", "hhhhhhhhh", "ddddhdddd", "ddhdhdddd", "dhhdhdddd", "dhhdhdddd", "ddddmdddd", "ddmdmdddd", "dmmdmdddd", "dmmdmdddd", "ddddhdddd", "dmddhdddd", "mdhdhdddd", "dmhdhdddd"]
         else:
             policy_list = [''.join(combination) for combination in itertools.product(['m', 'h', 'd'], repeat=nallocs)]

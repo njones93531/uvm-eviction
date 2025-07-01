@@ -18,7 +18,7 @@ KERNEL_ARGS = {"hpcs_log_short": 0, "hpcs_log_prefetching" : 0, "hpcs_log_evicti
 DO_NOPF = False
 
 PSIZES = ["75", "100", "125", "150", "175"] #Percentage of VRAM_SIZE
-BENCHMARKS = ['bfs-worst', 'sgemm', 'FDTD-2D', 'stream', 'tealeaf', 'conjugateGradientUM', 'GRAMSCHM']
+BENCHMARKS = ['bfs-worst', 'sgemm', 'FDTD-2D', 'stream', 'cg', 'tealeaf']
 
 PSIZES_SUBSET = ["100", "125"] #Percentage of VRAM_SIZE
 BENCHMARKS_SUBSET = ['bfs-worst', 'sgemm', 'FDTD-2D', 'stream']

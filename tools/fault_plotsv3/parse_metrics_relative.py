@@ -18,7 +18,7 @@ perf_data_base_dir = '../../benchmarks/strategied'
 metric_stats_type = 'default'
 kernel_version = 'x86_64-555.42.02'
 psizes = [100, 125, 150, 175]
-benchmarks = ['FDTD-2D', 'GRAMSCHM', 'stream', 'sgemm', 'bfs-worst', 'tealeaf', 'conjugateGradientUM']
+benchmarks = ['FDTD-2D', 'GRAMSCHM', 'stream', 'sgemm', 'bfs-worst', 'tealeaf', 'cg']
 PAPER_METS = ['app', 'psize', 'label', 'size', 'tr_median_1000', 'ts_rel_median_1000', 'tr_median_1000_OR_ts_rel_median_1000', 'd_mean_1000', 'dc_intra_rel_mean_1', 'dr_intra_mean_1000', 'dr_intra_mean_1', 'tr_mean_1', 'ws_mean_1_OVER_size']
 #Fontsize for radar chart
 base=48 
@@ -411,7 +411,9 @@ def compare_pivot_tables_speedup(pivot1, perf_df):
                 comparison_default.loc[app, psize] = 2.0
             else:
                 result = (cell_view_predicted_time - cell_view_best_time) / cell_view_best_time
-                default = cell_view_default_time / cell_view_predicted_time
+                default = 0.001
+                if cell_view_predicted_time > 0:
+                    default = cell_view_default_time / cell_view_predicted_time
                 comparison_result.loc[app, psize] = result
                 comparison_default.loc[app, psize] = default
                 score[0] += result
@@ -1844,12 +1846,19 @@ if __name__ == "__main__":
     #Parse data from external files 
     full_df = parse_df()
     pf = parse_perf_df()
+    print("Calculating Solution")
     solution = get_solution(benchmarks, psizes, pf.copy())
-    print_strat_naive(full_df.copy(), pf.copy(), p=False)
+    print("Calculating Naive Strats")
+    print_strat_naive(full_df.copy(), pf.copy())
+    print("Building Accuracy Plots")
     make_accuracy_plot("paper_metrics.csv")
+    print("Building Perf Barcharts")
     make_perf_barchart("paper_metrics.csv")
+    print("Building All Perf Barcharts")
     make_all_perf_barchart("paper_metrics.csv")
+    print("Building Radar Plots")
     radar_plot(full_df.copy())
+    print("Done")
             
 
     

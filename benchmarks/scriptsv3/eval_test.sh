@@ -9,7 +9,7 @@
 export IGNORE_CC_MISMATCH=1
 module load cuda/12.5
 
-cd ../strategied/conjugateGradientUM/
+cd ../strategied/cg/
 make 
 ./tmpexp.sh
 cd -
