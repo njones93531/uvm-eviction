@@ -1543,6 +1543,66 @@ def reshape_pivot_tables(pivot_tables, titles):
     return result
 
 
+def get_strat_ablation(data_df, pf, p=False):
+    pivots = []
+    strat_names = ['No Stream Test', 'No Device Packing', 'No Migr. Threshold', 'MIM']
+    
+    #No streaming
+    bc = 1000
+    #Set m_prediction 
+    data_df['thold1'] = 0.02
+    data_df['thold2']= 1
+    data_df['cond1'] = data_df[f'd_mean_{bc}'] > data_df['thold1']
+    data_df['cond2'] = data_df[f'dr_intra_mean_{bc}'] > data_df['thold2']
+    data_df['m_prediction'] = data_df['cond1'] & data_df['cond2']
+    d_metric = (f'tr_median_{bc}_OR_ts_rel_median_{bc}', 1)
+    pivots.append(classify_d_with(data_df.copy(), d_metric[0], d_metric[1], p=p, apply_m=True, perf_df=pf, returnTable=True))
+    
+    #No Device Packing
+    d_metric = ('none', 1)
+    pivots.append(classify_d_with(data_df.copy(), d_metric[0], d_metric[1], p=p, apply_m=True, perf_df=pf, returnTable=True))
+
+    #No Migration Threshold
+    data_df['m_prediction'] = True
+    d_metric = (f'tr_median_{bc}_OR_ts_rel_median_{bc}', 1)
+    pivots.append(classify_d_with(data_df.copy(), d_metric[0], d_metric[1], p=p, apply_m=True, perf_df=pf, returnTable=True))
+
+    #MIM
+    pivots.append(predict_strat_hardcode(data_df.copy(), pf.copy(), p=p))
+
+    ##Optimal
+    #a, comparison_default, b = compare_pivot_tables_speedup(solution, pf.copy())
+    #pivots.append(comparison_default)
+
+    df = reshape_pivot_tables(pivots, strat_names)
+    df = df[df['psize'] != 'index']
+    return df
+
+def get_strat_naive(data_df, pf, p=False):
+    pivots = []
+    strat_names = ['Migr.','Host','Dev+Migr.','Dev+Host','MIM','Opt']
+    #All m or All h
+    d_metric = ('none', 1)
+    pivots.append(classify_both(data_df.copy(), pf.copy(), d_metric, ['all'], p=p, returnTable=True))
+    pivots.append(classify_both(data_df.copy(), pf.copy(), d_metric, ['none'], p=p, returnTable=True))
+
+
+    #d using unique faults / alloc size, then all m or all h
+    d_metric = ('ws_mean_1_OVER_size', 1)
+    pivots.append(classify_both(data_df.copy(), pf.copy(), d_metric, ['all'], p=p, returnTable=True))
+    pivots.append(classify_both(data_df.copy(), pf.copy(), d_metric, ['none'], p=p, returnTable=True))
+
+    #Our prediction 
+    pivots.append(predict_strat_hardcode(data_df.copy(), pf.copy(), p=p))
+
+    #Optimal
+    a, comparison_default, b = compare_pivot_tables_speedup(solution, pf.copy())
+    pivots.append(comparison_default)
+
+    df = reshape_pivot_tables(pivots, strat_names)
+    df = df[df['psize'] != 'index']
+    return df
+
 
 def print_strat_naive(data_df, pf, p=False):
     pivots = []
@@ -1640,6 +1700,81 @@ def make_all_perf_barchart(csv_file):
     plt.savefig(f'../../figs/{hostname}/perf_comparison/default_{kernel_version}_vanilla_geomean_each.png')
     plt.close()
 
+def make_ablation_barchart(df):
+    textsize = 20 
+    plt.rcParams.update({'font.size': textsize})
+    # Ensure required columns exist
+    if 'app' not in df or 'psize' not in df:
+        raise ValueError("Dataframe must contain 'app' and 'psize' columns.")
+
+    # Convert numeric columns to float
+    numeric_cols = df.columns.difference(['app', 'psize'])
+    df[numeric_cols] = df[numeric_cols].astype(float)
+
+    for idx, row in df.iterrows():
+        # Extract title information
+        title = f"{row.loc['app']} - {row.loc['psize']}"
+
+        # Drop 'app' and 'psize' to get data for the bar chart
+        data = row[numeric_cols]
+        #print(data)
+
+        # Plot bar chart
+        plt.figure(figsize=(10, 6))
+        plt.subplots_adjust(left=0.15, bottom=0.3)
+        data = data[['No Stream Test', 'No Device Packing', 'No Migr. Threshold', 'MIM']]
+        data.plot(kind='bar', color='skyblue', edgecolor='black')
+
+        # Formatting
+        #plt.title(title)
+        plt.xlabel("Strategies")
+        plt.ylabel("Speedup (vs Migr)")
+        plt.xticks(rotation=45)
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+        # Show the plot
+        os.makedirs(f"../../figs/{hostname}/perf_comparison/{row['app']}", exist_ok=True)
+        plt.savefig(f"../../figs/{hostname}/perf_comparison/{row['app']}/ablation_{row['app']}_{row['psize']}.png")
+        plt.close()
+
+    #Avg Barchart 
+    #avg_row = df[['Migr.', 'Host', 'Dev+Migr.', 'Dev+Host', 'Static-Opt', 'MIM']].aggregate(gmean)
+    avg_row = df[['No Stream Test', 'No Device Packing', 'No Migr. Threshold', 'MIM']].aggregate(gmean)
+    colors = ["#D4E1F5", "#D5E8D4", "#FFCE9F", "#0072B2"]
+    hatch_patterns = ['|', '+', '*', 'o']
+    plt.figure(figsize=(10, 4))
+    #plt.subplots_adjust(left=0.07, bottom=0.20)
+    
+    ax = avg_row.plot(kind='bar', color=colors, edgecolor='black', hatch=hatch_patterns)
+
+    # Formatting
+    #plt.title(title)
+    #plt.xlabel("Strategies")
+    plt.hlines(1,-0.5,5.5)
+    plt.ylabel("Speedup (vs Migr.)")
+    plt.yticks([1, 2, 3])
+    plt.xticks(rotation=15)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+    # Define hatching patterns
+
+    # Apply hatching
+    #for i, bar_container in enumerate(ax.containers):
+    #    for bar in bar_container:
+    #        bar.set_hatch(hatch_patterns[i % len(hatch_patterns)])
+
+    # Annotate each bar with its value
+    for p in ax.patches:
+        ax.annotate(str(np.round(p.get_height(), 2)), 
+                (p.get_x() + p.get_width() / 2., p.get_height()),
+                ha='center', va='bottom')
+
+    # Show the plot
+    plt.tight_layout()
+    os.makedirs(f"../../figs/{hostname}/perf_comparison/", exist_ok=True)
+    plt.savefig(f'../../figs/{hostname}/perf_comparison/ablation_default_{kernel_version}_vanilla_geomean_all.png')
+    plt.close()
+ 
 
 def make_perf_barchart(csv_file):
     # Read CSV into DataFrame
@@ -1856,6 +1991,9 @@ if __name__ == "__main__":
     make_perf_barchart("paper_metrics.csv")
     print("Building All Perf Barcharts")
     make_all_perf_barchart("paper_metrics.csv")
+    print("Building Ablation Barcharts")
+    df = get_strat_ablation(full_df.copy(), pf.copy())
+    make_ablation_barchart(df.copy())
     print("Building Radar Plots")
     radar_plot(full_df.copy())
     print("Done")
