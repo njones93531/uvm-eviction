@@ -79,7 +79,7 @@ void profiler_print_full_profile(struct Profile* profile)
         profile->profiler_entries[ii].time);
   }
 
-  printf("\nTotal elapsed time: %.03Fs, entries * are excluded.\n", total_elapsed_time);
+  printf("\nGPU Runtime: %.03Fs, entries * are excluded.\n", total_elapsed_time);
   printf("\n-------------------------------------------------------------\n\n");
 }
 
