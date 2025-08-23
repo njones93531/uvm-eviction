@@ -17,6 +17,6 @@ docker  build . -t cuda-container
 docker run --init --hostname=cuda-host --privileged=true -it --gpus all --ipc=host \
   --ulimit memlock=-1 --ulimit stack=67108864 --rm  \
   -v `pwd`/../:/uvm-eviction -w /uvm-eviction \
-  -v /lib/modules/$(uname -r)/build:/lib/modules/$(uname -r)/build \
-  -v /usr/src/kernels/$(uname -r):/usr/src/kernels/$(uname -r):ro \
+  -v /lib/modules:/lib/modules \
+  -v /usr/src/:/usr/src:ro \
   cuda-container bash
