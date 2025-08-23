@@ -170,7 +170,7 @@ static uvm_va_range_t *uvm_va_range_alloc_managed(uvm_va_space_t *va_space, NvU6
         goto error;
     }
 
-    if (hpcs_log_short)
+    if (uvm_hpcs_log_short_enabled())
     {
         struct hpcs_fault_record_short r1 = {HPCS_ENCODE_ID(va_range->node.start, HPCS_ADDR_RANGE)};
         struct hpcs_fault_record_short r2 = {uvm_va_range_size(va_range)};

@@ -11770,14 +11770,14 @@ static void uvm_va_block_get_prefetch_hint(uvm_va_block_t *va_block,
             // HPCS: Uncomment this block to log prefetches - tna
             // TODO: add more data to prefetch? infer timestamp? idk
             // TODO: we can build a batch-logging function for this that will improve performance if we actually ever care about these. 
-            if (hpcs_log_prefetching)
+            if (uvm_hpcs_log_prefetching_enabled())
             {
                 if(UVM_ID_IS_GPU(new_residency))
                 {
                     for_each_va_block_page_in_mask(page_index, prefetch_pages_mask, va_block) 
                     {
                         //printk("p,%llx\n", (page_index * PAGE_SIZE + va_block->start));
-                        if (hpcs_log_short)
+                        if (uvm_hpcs_log_short_enabled())
                         {
                             struct hpcs_fault_record_short r = {HPCS_ENCODE_ID(page_index * PAGE_SIZE + va_block->start, HPCS_PREFETCH)};
                             hpcs_fault_log_write_short(&r);
@@ -13095,9 +13095,9 @@ NV_STATUS uvm_va_block_evict_chunks(uvm_va_block_t *va_block,
     // HPCS: uncomment for eviction logging
     //printk("e,%llx\n", va_block->start);
     //TODO i don't think evictions need a batch logging function, seems hard to do anyway.
-    if (hpcs_log_evictions)
+    if (uvm_hpcs_log_evictions_enabled())
     {
-        if (hpcs_log_short)
+        if (uvm_hpcs_log_short_enabled())
         {
             struct hpcs_fault_record_short r = {HPCS_ENCODE_ID(va_block->start, HPCS_EVICTION)};
             hpcs_fault_log_write_short(&r);

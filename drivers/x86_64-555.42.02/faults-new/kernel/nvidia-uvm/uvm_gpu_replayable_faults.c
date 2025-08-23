@@ -3013,7 +3013,7 @@ ssize_t hpcs_fault_log_write_batch(const uvm_fault_service_batch_context_t* batc
     dist = readp > writep ? readp - writep : HPCS_BUFFER_CAP - writep;// - 1;
     dist = lengthr > dist ? dist : lengthr;
 
-    if (hpcs_log_short)
+    if (uvm_hpcs_log_short_enabled())
     {
         for (i = 0; i < dist; i++) 
         {
@@ -3048,7 +3048,7 @@ ssize_t hpcs_fault_log_write_batch(const uvm_fault_service_batch_context_t* batc
         // if length remaining is greater than readp pointer, we can only read up to the read pointer - 1.
         dist = lengthr > readp ? readp - 1 : lengthr;
         //printk("Starting copy2 at %lu\n", readp);
-        if (hpcs_log_short)
+        if (uvm_hpcs_log_short_enabled())
         {
             for (i = 0; i < dist; i++) 
             {
