@@ -1118,9 +1118,9 @@ static void uvm_chardev_exit(void)
     unregister_chrdev_region(g_uvm_base_dev, NVIDIA_UVM_NUM_MINOR_DEVICES);
 }
 
-static int hpcs_log_short = 0;
-static int hpcs_log_evictions = 0;
-static int hpcs_log_prefetching = 0;
+int hpcs_log_short = 0;
+int hpcs_log_evictions = 0;
+int hpcs_log_prefetching = 0;
 module_param(hpcs_log_short, int, 0644);
 module_param(hpcs_log_evictions, int, 0644);
 module_param(hpcs_log_prefetching, int, 0644);

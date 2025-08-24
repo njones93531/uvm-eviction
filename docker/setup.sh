@@ -19,4 +19,6 @@ docker run --init --hostname=cuda-host --privileged=true -it --gpus all --ipc=ho
   -v `pwd`/../:/uvm-eviction -w /uvm-eviction \
   -v /lib/modules:/lib/modules \
   -v /usr/src/:/usr/src:ro \
+  -v /usr/src/nvidia-555.42.02:/usr/src/nvidia-555.42.02:ro \
+  -v /usr/src/kernels/$(uname -r):/usr/src/kernels/$(uname -r):ro \
   cuda-container bash

@@ -20,5 +20,6 @@ echo "  Fedora/RHEL:   sudo dnf install kernel-devel-$(uname -r)"
 echo "  CentOS:        sudo yum install kernel-devel-$(uname -r)"
 echo "  Arch:          sudo pacman -S linux-headers"
 echo "  openSUSE:      sudo zypper install kernel-default-devel"
+
 exit 1
 

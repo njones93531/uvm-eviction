@@ -23,8 +23,15 @@ apt install -y libstdc++6
 export CC=gcc-12
 export CXX=g++-12
 
-echo "Environment complete" 
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 11
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 12
+update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 11
+update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 12
 
+update-alternatives --set gcc /usr/bin/gcc-12
+update-alternatives --set g++ /usr/bin/g++-12
+
+echo "Environment complete" 
 
 umask 000
 exec "$@"

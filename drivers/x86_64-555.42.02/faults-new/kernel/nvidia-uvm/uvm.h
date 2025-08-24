@@ -59,6 +59,7 @@
 #define _UVM_H_
 
 #define UVM_API_LATEST_REVISION 11
+#define UVM_API_REVISION UVM_API_LATEST_REVISION
 
 #if !defined(UVM_API_REVISION)
 #error "please define UVM_API_REVISION macro to a desired version number or UVM_API_LATEST_REVISION macro"
@@ -75,30 +76,6 @@ extern "C" {
 #endif
 
 // uvm.h
-#ifndef __UVM_HPCS_H__
-#define __UVM_HPCS_H__
-
-// Forward-declare accessors
-static inline bool uvm_hpcs_log_short_enabled(void)
-{
-    extern unsigned int hpcs_log_short; // declared in uvm.c
-    return hpcs_log_short != 0;
-}
-
-static inline bool uvm_hpcs_log_evictions_enabled(void)
-{
-    extern unsigned int hpcs_log_evictions;
-    return hpcs_log_evictions != 0;
-}
-
-static inline bool uvm_hpcs_log_prefetching_enabled(void)
-{
-    extern unsigned int hpcs_log_prefetching;
-    return hpcs_log_prefetching != 0;
-}
-
-#endif
-
 
 
 //------------------------------------------------------------------------------
