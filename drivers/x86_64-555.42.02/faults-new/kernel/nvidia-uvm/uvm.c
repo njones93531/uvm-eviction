@@ -1118,12 +1118,29 @@ static void uvm_chardev_exit(void)
     unregister_chrdev_region(g_uvm_base_dev, NVIDIA_UVM_NUM_MINOR_DEVICES);
 }
 
-int hpcs_log_short = 0;
-int hpcs_log_evictions = 0;
-int hpcs_log_prefetching = 0;
-module_param(hpcs_log_short, int, 0644);
-module_param(hpcs_log_evictions, int, 0644);
-module_param(hpcs_log_prefetching, int, 0644);
+static int hpcs_log_short = 0;
+static int hpcs_log_evictions = 0;
+static int hpcs_log_prefetching = 0;
+module_param(hpcs_log_short, int, S_IRUGO);
+module_param(hpcs_log_evictions, int, S_IRUGO);
+module_param(hpcs_log_prefetching, int, S_IRUGO);
+
+// Forward-declare accessors
+inline bool uvm_hpcs_log_short_enabled(void)
+{
+    return hpcs_log_short != 0;
+}
+
+inline bool uvm_hpcs_log_evictions_enabled(void)
+{
+    return hpcs_log_evictions != 0;
+}
+
+inline bool uvm_hpcs_log_prefetching_enabled(void)
+{
+    return hpcs_log_prefetching != 0;
+}
+
 static int hpcs_major_number;
 static struct class* hpcs_char_class = NULL;
 static struct device* hpcs_char_device = NULL;

@@ -444,24 +444,10 @@ static void uvm_cpu_get_unaddressable_range(NvU64 *first, NvU64 *outer)
 #ifndef __UVM_HPCS_H__
 #define __UVM_HPCS_H__
 
-extern int hpcs_log_short; // declared in uvm.c			    
-extern int hpcs_log_evictions;
-extern int hpcs_log_prefetching;
 // Forward-declare accessors
-static inline bool uvm_hpcs_log_short_enabled(void)
-{
-    return hpcs_log_short != 0;
-}
-
-static inline bool uvm_hpcs_log_evictions_enabled(void)
-{
-    return hpcs_log_evictions != 0;
-}
-
-static inline bool uvm_hpcs_log_prefetching_enabled(void)
-{
-    return hpcs_log_prefetching != 0;
-}
+inline bool uvm_hpcs_log_short_enabled(void);
+inline bool uvm_hpcs_log_evictions_enabled(void);
+inline bool uvm_hpcs_log_prefetching_enabled(void);
 
 #endif
 
