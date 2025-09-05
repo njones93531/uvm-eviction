@@ -47,6 +47,7 @@ def init_syslogger(logfile):
     counter = 0
     while not os.path.exists("/dev/hpcs_logger"):
         counter = counter + 1
+        sh.sudo("mknod", "-m", "0666", "/dev/hpcs_logger", "c", "506", "0")
         if counter > 10:
             print("/dev/hpcs_logger still does not exist after 10 seconds; check dmesg for errors")
             sys.exit(1)
