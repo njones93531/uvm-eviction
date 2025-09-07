@@ -41,13 +41,22 @@ def install_module(path):
     #sh.sudo("make", "modules_install", "-j")
     os.chdir(oldpwd)
 
+def get_device_number(device_name):
+    with open("/proc/devices") as f:
+        for line in f:
+            parts = line.strip().split()
+            if len(parts) == 2 and parts[1] == device_name:
+                return int(parts[0])
+    return None
+
 def init_syslogger(logfile):
     # this is required for voltron because it doesn't support kernel-open and udev has to create this file, 
     # which has a slight asynchronous delay
+    dev_num = get_device_number("hpcs_logger")
     counter = 0
     while not os.path.exists("/dev/hpcs_logger"):
         counter = counter + 1
-        sh.sudo("mknod", "-m", "0666", "/dev/hpcs_logger", "c", "506", "0")
+        sh.sudo("mknod", "-m", "0666", "/dev/hpcs_logger", "c", str(dev_num), "0")
         if counter > 10:
             print("/dev/hpcs_logger still does not exist after 10 seconds; check dmesg for errors")
             sys.exit(1)
