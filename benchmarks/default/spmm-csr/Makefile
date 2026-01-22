@@ -20,7 +20,7 @@ LIBS         := -lcusparse
 all: spmm_csr_example
 
 spmm_csr_example: spmm_csr_example.c
-	nvcc $(INC) spmm_csr_example.c -o spmm_csr_example $(LIBS)
+	nvcc $(INC) spmm_csr.c -o spmm_csr $(LIBS)
 
 clean:
 	rm -f spmm_csr_example
