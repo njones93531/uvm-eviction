@@ -20,7 +20,8 @@
 #include <stdio.h>            // printf
 #include <stdlib.h>           // EXIT_FAILURE
 #include <time.h>
-#define CPU 1
+
+#define ERROR_THRESHOLD 0.001
 
 #define CHECK_CUDA(func)                                                       \
 {                                                                              \
@@ -59,19 +60,47 @@ void cpu_spmm(const size_t num_rows, const size_t num_nonzero, const size_t num_
     }
 }
 
+float get_size(int A_r, int A_nnz, int Bs, int Cs) {
+    double alloc0 = (double) (A_r + 1) * sizeof(int);	
+    double alloc1 = (double) A_nnz * sizeof(int);	
+    double alloc2 = (double) A_nnz * sizeof(float);	
+    double alloc3 = (double) Bs * sizeof(float);	
+    double alloc4 = (double) Cs * sizeof(float);	
+    return (alloc0 + alloc1 + alloc2 + alloc3 + alloc4) / (1024. * 1024. * 1024.);
+}
 
-int main(void) {
-    // Host problem definition
-    int   A_num_rows      = 4;
-    int   A_num_cols      = 4;
-    int   A_nnz           = 9;
+int main(int argc, char *argv[]) {
+    if (argc != 6) {
+        fprintf(stderr,
+                "Usage: %s <A_num_rows> <A_num_cols> <A_nnz> <B_num_cols> <CPU>\n",
+                argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    int CPU = atoi(argv[5]);
+
+    int   A_num_rows      = atoi(argv[1]);
+    int   A_num_cols      = atoi(argv[2]);
+    int   A_nnz           = atoi(argv[3]);
     int   B_num_rows      = A_num_cols;
-    int   B_num_cols      = 3;
+    int   B_num_cols      = atoi(argv[4]);
     int   ldb             = B_num_rows;
     int   ldc             = A_num_rows;
     int   B_size          = ldb * B_num_cols;
     int   C_size          = ldc * B_num_cols;
 
+    printf("A: %d x %d, nnz = %d, density: %f\n", A_num_rows, A_num_cols, A_nnz, (float)A_nnz / (float)(A_num_rows * A_num_cols));
+    printf("B: %d x %d\n", B_num_rows, B_num_cols);
+    printf("C: %d x %d\n", A_num_rows, B_num_cols);
+
+    printf("size: %f\n", get_size(A_num_rows, A_nnz, B_size, C_size));
+
+    if (A_nnz > (long long)A_num_rows * A_num_cols) {
+        fprintf(stderr,
+    	        "Invalid nnz: %d > %d * %d\n",
+	        A_nnz, A_num_rows, A_num_cols);
+        return EXIT_FAILURE;
+    }
 
     srand(time(NULL));
     int*   hA_csrOffsets;
@@ -120,7 +149,6 @@ int main(void) {
 	    hA_columns[j] = rand() % A_num_cols; // must be < A_num_cols, not A_num_rows
         }
     }
-
 
     for (size_t i = 0; i < B_size; ++i) {
         hB[i] = (float)rand() / RAND_MAX;
@@ -189,9 +217,10 @@ int main(void) {
 		    hB, hC_result, B_num_rows);
 	    for (int i = 0; i < A_num_rows; i++) {
 		for (int j = 0; j < B_num_cols; j++) {
-		    if (hC[i + j * ldc] != hC_result[i + j * ldc]) {
+		    double abs_err = fabs(hC[i + j * ldc] - hC_result[i + j * ldc]);
+		    if (abs_err > ERROR_THRESHOLD) {
 			correct = 0; // direct floating point comparison is not reliable
-                        printf("%zu . Device: %.4f CPU: %.4f\n",i, hC[i + j * ldc], hC_result[i + j * ldc]);
+                        printf("%f . Device: %.4f CPU: %.4f\n",abs_err, hC[i + j * ldc], hC_result[i + j * ldc]);
 			//break;
 		    }
 		}
