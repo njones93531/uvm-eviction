@@ -44,7 +44,7 @@
 }
 
 // CPU-based SPMM (CSR * Dense)
-// 	cuSparse Dense matrices are col major btw
+//	cuSparse Dense matrices are col major btw
 void cpu_spmm(const size_t num_rows, const size_t num_nonzero, const size_t num_cols_B,
               const float* values, const int* col_indices, const int* row_offsets,
               const float* B, float* C, const int B_ld) {
@@ -97,8 +97,8 @@ int main(int argc, char *argv[]) {
 
     if (A_nnz > (long long)A_num_rows * A_num_cols) {
         fprintf(stderr,
-    	        "Invalid nnz: %d > %d * %d\n",
-	        A_nnz, A_num_rows, A_num_cols);
+				"Invalid nnz: %d > %d * %d\n",
+			A_nnz, A_num_rows, A_num_cols);
         return EXIT_FAILURE;
     }
     if (A_nnz < A_num_rows) {
@@ -119,15 +119,25 @@ int main(int argc, char *argv[]) {
     float beta            = 0.0f;
     //--------------------------------------------------------------------------
     // Device memory management
-    CHECK_CUDA( cudaMallocManaged((void**) &hA_csrOffsets,
-                           (A_num_rows + 1) * sizeof(int), cudaMemAttachGlobal))
-    CHECK_CUDA( cudaMallocManaged((void**) &hA_columns, A_nnz * sizeof(int), cudaMemAttachGlobal))
-    CHECK_CUDA( cudaMallocManaged((void**) &hA_values,  A_nnz * sizeof(float), cudaMemAttachGlobal))
-    CHECK_CUDA( cudaMallocManaged((void**) &hB,         B_size * sizeof(float), cudaMemAttachGlobal))
-    CHECK_CUDA( cudaMallocManaged((void**) &hC,         C_size * sizeof(float), cudaMemAttachGlobal))
+    int   *dA_csrOffsets, *dA_columns;
+    float *dA_values, *dB, *dC;
+
+    hA_csrOffsets = (int*)malloc((A_num_rows + 1) * sizeof(int));
+    hA_columns    = (int*)malloc(A_nnz * sizeof(int));
+    hA_values     = (float*)malloc(A_nnz * sizeof(float));
+    hB            = (float*)malloc(B_size * sizeof(float));
+    hC            = (float*)malloc(C_size * sizeof(float));
+
     if (CPU) {
-        CHECK_CUDA( cudaMallocManaged((void**) &hC_result,         C_size * sizeof(float), cudaMemAttachGlobal))
+        hC_result = (float*)malloc(C_size * sizeof(float));
     }
+
+    CHECK_CUDA(cudaMalloc((void**)&dA_csrOffsets, (A_num_rows + 1) * sizeof(int)));
+    CHECK_CUDA(cudaMalloc((void**)&dA_columns,    A_nnz * sizeof(int)));
+    CHECK_CUDA(cudaMalloc((void**)&dA_values,     A_nnz * sizeof(float)));
+    CHECK_CUDA(cudaMalloc((void**)&dB,            B_size * sizeof(float)));
+    CHECK_CUDA(cudaMalloc((void**)&dC,            C_size * sizeof(float)));
+
 
     int nnz_per_row[A_num_rows];
     int remaining = A_nnz;
@@ -151,8 +161,8 @@ int main(int argc, char *argv[]) {
         int start = hA_csrOffsets[i];
         int end   = hA_csrOffsets[i+1];
         for (int j = start; j < end; j++) {
-     	    hA_values[j] = (float)rand() / RAND_MAX;
-	    hA_columns[j] = rand() % A_num_cols; // must be < A_num_cols, not A_num_rows
+			hA_values[j] = (float)rand() / RAND_MAX;
+		hA_columns[j] = rand() % A_num_cols; // must be < A_num_cols, not A_num_rows
         }
     }
 
@@ -162,6 +172,27 @@ int main(int argc, char *argv[]) {
     for (size_t i = 0; i < C_size; ++i) {
         hC[i] = 0.0; // Initialize output vector
     }
+
+    CHECK_CUDA(cudaMemcpy(dA_csrOffsets, hA_csrOffsets,
+                      (A_num_rows + 1) * sizeof(int),
+                      cudaMemcpyHostToDevice));
+
+    CHECK_CUDA(cudaMemcpy(dA_columns, hA_columns,
+                      A_nnz * sizeof(int),
+                      cudaMemcpyHostToDevice));
+
+    CHECK_CUDA(cudaMemcpy(dA_values, hA_values,
+                      A_nnz * sizeof(float),
+                      cudaMemcpyHostToDevice));
+
+    CHECK_CUDA(cudaMemcpy(dB, hB,
+                      B_size * sizeof(float),
+                      cudaMemcpyHostToDevice));
+
+    CHECK_CUDA(cudaMemcpy(dC, hC,
+                      C_size * sizeof(float),
+                      cudaMemcpyHostToDevice));
+
 
     //--------------------------------------------------------------------------
     // CUSPARSE APIs
@@ -173,14 +204,14 @@ int main(int argc, char *argv[]) {
     CHECK_CUSPARSE( cusparseCreate(&handle) )
     // Create sparse matrix A in CSR format
     CHECK_CUSPARSE( cusparseCreateCsr(&matA, A_num_rows, A_num_cols, A_nnz,
-                                      hA_csrOffsets, hA_columns, hA_values,
+                                      dA_csrOffsets, dA_columns, dA_values,
                                       CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
                                       CUSPARSE_INDEX_BASE_ZERO, CUDA_R_32F) )
     // Create dense matrix B
-    CHECK_CUSPARSE( cusparseCreateDnMat(&matB, A_num_cols, B_num_cols, ldb, hB,
+    CHECK_CUSPARSE( cusparseCreateDnMat(&matB, A_num_cols, B_num_cols, ldb, dB,
                                         CUDA_R_32F, CUSPARSE_ORDER_COL) )
     // Create dense matrix C
-    CHECK_CUSPARSE( cusparseCreateDnMat(&matC, A_num_rows, B_num_cols, ldc, hC,
+    CHECK_CUSPARSE( cusparseCreateDnMat(&matC, A_num_rows, B_num_cols, ldc, dC,
                                         CUDA_R_32F, CUSPARSE_ORDER_COL) )
     // allocate an external buffer if needed
     CHECK_CUSPARSE( cusparseSpMM_bufferSize(
@@ -213,24 +244,25 @@ int main(int argc, char *argv[]) {
     CHECK_CUSPARSE( cusparseDestroy(handle) )
     //--------------------------------------------------------------------------
     // device result check
-    //CHECK_CUDA( cudaMemcpy(hC, dC, C_size * sizeof(float),
-     //                      cudaMemcpyDeviceToHost) )
+    CHECK_CUDA( cudaMemcpy(hC, dC, C_size * sizeof(float),
+                           cudaMemcpyDeviceToHost) )
     int correct = 1;
+
     if (CPU) {
-	    for (size_t i = 0; i < C_size; i++)
-		    hC_result[i] = 0.0f;
-    	    cpu_spmm(A_num_rows, A_nnz, B_num_cols, hA_values, hA_columns, hA_csrOffsets,
-		    hB, hC_result, B_num_rows);
-	    for (int i = 0; i < A_num_rows; i++) {
+		for (size_t i = 0; i < C_size; i++)
+			hC_result[i] = 0.0f;
+		cpu_spmm(A_num_rows, A_nnz, B_num_cols, hA_values, hA_columns, hA_csrOffsets,
+			hB, hC_result, B_num_rows);
+		for (int i = 0; i < A_num_rows; i++) {
 		for (int j = 0; j < B_num_cols; j++) {
-		    double abs_err = fabs(hC[i + j * ldc] - hC_result[i + j * ldc]);
-		    if (abs_err > ERROR_THRESHOLD) {
+			double abs_err = fabs(hC[i + j * ldc] - hC_result[i + j * ldc]);
+			if (abs_err > ERROR_THRESHOLD) {
 			correct = 0; // direct floating point comparison is not reliable
                         printf("%f . Device: %.4f CPU: %.4f\n",abs_err, hC[i + j * ldc], hC_result[i + j * ldc]);
 			//break;
-		    }
+			}
 		}
-	    }
+		}
     }
     if (correct)
         printf("spmm_csr_example test PASSED\n");
@@ -238,11 +270,20 @@ int main(int argc, char *argv[]) {
         printf("spmm_csr_example test FAILED: wrong result\n");
     //--------------------------------------------------------------------------
     // device memory deallocation
-    CHECK_CUDA( cudaFree(dBuffer) )
-    CHECK_CUDA( cudaFree(hA_csrOffsets) )
-    CHECK_CUDA( cudaFree(hA_columns) )
-    CHECK_CUDA( cudaFree(hA_values) )
-    CHECK_CUDA( cudaFree(hB) )
-    CHECK_CUDA( cudaFree(hC) )
+    
+    cudaFree(dA_csrOffsets);
+	cudaFree(dA_columns);
+	cudaFree(dA_values);
+	cudaFree(dB);
+	cudaFree(dC);
+
+	free(hA_csrOffsets);
+	free(hA_columns);
+	free(hA_values);
+	free(hB);
+    free(hC);
+
+    if (CPU) free(hC_result);
+
     return EXIT_SUCCESS;
 }
