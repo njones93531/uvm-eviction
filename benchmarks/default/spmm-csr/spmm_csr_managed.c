@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-#include <cuda_runtime_api.h> // cudaMalloc, cudaMemcpy, etc.
 #include <cusparse.h>         // cusparseSpMM
 #include <stdio.h>            // printf
 #include <stdlib.h>           // EXIT_FAILURE
@@ -119,8 +118,8 @@ int main(int argc, char *argv[]) {
     float beta            = 0.0f;
     //--------------------------------------------------------------------------
     // Device memory management
-    int   *dA_csrOffsets, *dA_columns;
-    float *dA_values, *dB, *dC;
+    int   *hA_csrOffsets, *hA_columns;
+    float *hA_values, *hB, *hC;
 
     int before = (A_num_rows + 1);
     hA_csrOffsets = (int*)malloc(before * sizeof(int));
@@ -134,11 +133,11 @@ int main(int argc, char *argv[]) {
     }
 
     
-    CHECK_CUDA(cudaMalloc((void**)&dA_csrOffsets, before * sizeof(int)));
-    CHECK_CUDA(cudaMalloc((void**)&dA_columns,    A_nnz * sizeof(int)));
-    CHECK_CUDA(cudaMalloc((void**)&dA_values,     A_nnz * sizeof(float)));
-    CHECK_CUDA(cudaMalloc((void**)&dB,            B_size * sizeof(float)));
-    CHECK_CUDA(cudaMalloc((void**)&dC,            C_size * sizeof(float)));
+    CHECK_CUDA(cudaMallocManaged((void**)&hA_csrOffsets,  before * sizeof(int), cudaMemAttachGlobal));
+    CHECK_CUDA(cudaMallocManaged((void**)&hA_columns,     A_nnz * sizeof(int), cudaMemAttachGlobal));
+    CHECK_CUDA(cudaMallocManaged((void**)&hA_values,      A_nnz * sizeof(float), cudaMemAttachGlobal));
+    CHECK_CUDA(cudaMallocManaged((void**)&hB,             B_size * sizeof(float), cudaMemAttachGlobal));
+    CHECK_CUDA(cudaMallocManaged((void**)&hC,             C_size * sizeof(float), cudaMemAttachGlobal));
 
 
     int nnz_per_row[A_num_rows];
@@ -175,11 +174,6 @@ int main(int argc, char *argv[]) {
         hC[i] = 0.0; // Initialize output vector
     }
 
-    CHECK_CUDA(cudaMemcpy(dA_csrOffsets, hA_csrOffsets, (A_num_rows + 1) * sizeof(int), cudaMemcpyHostToDevice));
-    CHECK_CUDA(cudaMemcpy(dA_columns, hA_columns, A_nnz * sizeof(int), cudaMemcpyHostToDevice));
-    CHECK_CUDA(cudaMemcpy(dA_values, hA_values, A_nnz * sizeof(float), cudaMemcpyHostToDevice));
-    CHECK_CUDA(cudaMemcpy(dB, hB, B_size * sizeof(float), cudaMemcpyHostToDevice));
-    CHECK_CUDA(cudaMemcpy(dC, hC, C_size * sizeof(float), cudaMemcpyHostToDevice));
 
 
     //--------------------------------------------------------------------------
@@ -187,19 +181,19 @@ int main(int argc, char *argv[]) {
     cusparseHandle_t     handle = NULL;
     cusparseSpMatDescr_t matA;
     cusparseDnMatDescr_t matB, matC;
-    void*                dBuffer    = NULL;
+    void*                hBuffer    = NULL;
     size_t               bufferSize = 0;
     CHECK_CUSPARSE( cusparseCreate(&handle) )
     // Create sparse matrix A in CSR format
     CHECK_CUSPARSE( cusparseCreateCsr(&matA, A_num_rows, A_num_cols, A_nnz,
-                                      dA_csrOffsets, dA_columns, dA_values,
+                                      hA_csrOffsets, hA_columns, hA_values,
                                       CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
                                       CUSPARSE_INDEX_BASE_ZERO, CUDA_R_32F) )
     // Create dense matrix B
-    CHECK_CUSPARSE( cusparseCreateDnMat(&matB, A_num_cols, B_num_cols, ldb, dB,
+    CHECK_CUSPARSE( cusparseCreateDnMat(&matB, A_num_cols, B_num_cols, ldb, hB,
                                         CUDA_R_32F, CUSPARSE_ORDER_COL) )
     // Create dense matrix C
-    CHECK_CUSPARSE( cusparseCreateDnMat(&matC, A_num_rows, B_num_cols, ldc, dC,
+    CHECK_CUSPARSE( cusparseCreateDnMat(&matC, A_num_rows, B_num_cols, ldc, hC,
                                         CUDA_R_32F, CUSPARSE_ORDER_COL) )
     // allocate an external buffer if needed
     CHECK_CUSPARSE( cusparseSpMM_bufferSize(
@@ -208,7 +202,7 @@ int main(int argc, char *argv[]) {
                                  CUSPARSE_OPERATION_NON_TRANSPOSE,
                                  &alpha, matA, matB, &beta, matC, CUDA_R_32F,
                                  CUSPARSE_SPMM_ALG_DEFAULT, &bufferSize) )
-    CHECK_CUDA( cudaMalloc(&dBuffer, bufferSize) )
+    CHECK_CUDA( cudaMallocManaged(&hBuffer,  bufferSize), cudaMemAttachGlobal )
 
     // execute preprocess (optional)
     CHECK_CUSPARSE( cusparseSpMM_preprocess(
@@ -216,14 +210,14 @@ int main(int argc, char *argv[]) {
                                  CUSPARSE_OPERATION_NON_TRANSPOSE,
                                  CUSPARSE_OPERATION_NON_TRANSPOSE,
                                  &alpha, matA, matB, &beta, matC, CUDA_R_32F,
-                                 CUSPARSE_SPMM_ALG_DEFAULT, dBuffer) )
+                                 CUSPARSE_SPMM_ALG_DEFAULT, hBuffer) )
 
     // execute SpMM
     CHECK_CUSPARSE( cusparseSpMM(handle,
                                  CUSPARSE_OPERATION_NON_TRANSPOSE,
                                  CUSPARSE_OPERATION_NON_TRANSPOSE,
                                  &alpha, matA, matB, &beta, matC, CUDA_R_32F,
-                                 CUSPARSE_SPMM_ALG_DEFAULT, dBuffer) )
+                                 CUSPARSE_SPMM_ALG_DEFAULT, hBuffer) )
 
     // destroy matrix/vector descriptors
     CHECK_CUSPARSE( cusparseDestroySpMat(matA) )
@@ -232,8 +226,6 @@ int main(int argc, char *argv[]) {
     CHECK_CUSPARSE( cusparseDestroy(handle) )
     //--------------------------------------------------------------------------
     // device result check
-    CHECK_CUDA( cudaMemcpy(hC, dC, C_size * sizeof(float),
-                           cudaMemcpyDeviceToHost) )
     int correct = 1;
 
     if (CPU) {
@@ -259,11 +251,11 @@ int main(int argc, char *argv[]) {
     //--------------------------------------------------------------------------
     // device memory deallocation
     
-    cudaFree(dA_csrOffsets);
-	cudaFree(dA_columns);
-	cudaFree(dA_values);
-	cudaFree(dB);
-	cudaFree(dC);
+    cudaFree(hA_csrOffsets);
+	cudaFree(hA_columns);
+	cudaFree(hA_values);
+	cudaFree(hB);
+	cudaFree(hC);
 
 	free(hA_csrOffsets);
 	free(hA_columns);

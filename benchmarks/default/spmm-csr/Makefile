@@ -28,6 +28,9 @@ spmm_csr: spmm_csr.c
 spmm_csr_example: spmm_csr_explicit.c
 	nvcc $(INC) spmm_csr_explicit.c -o spmm_csr_explicit $(LIBS)
 
+spmm_csr_managed: spmm_csr_managed.c
+	nvcc $(INC) spmm_csr_managed.c -o spmm_csr_managed $(LIBS)
+
 clean:
 	rm -f spmm_csr_example
 	rm -f spmm_csr
