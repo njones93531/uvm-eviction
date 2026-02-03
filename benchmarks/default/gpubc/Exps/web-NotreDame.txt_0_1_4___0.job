@@ -1,0 +1,9 @@
+#!/bin/bash
+#PBS -N web-NotreDame.txt_0_1_4___0.result
+#PBS -l nodes=1:ppn=8:gpu
+#PBS -l walltime=48:00:00
+cd /home/aerdem/eriks_gpu_bc/gpu_bc/Exps
+program=/home/aerdem/eriks_gpu_bc/gpu_bc/Exps/execs/gpu_bc
+date
+OMP_NUM_THREADS=1 $program /home/aerdem/big_for_bc/web-NotreDame.txt 0 1 4 1000 4
+date

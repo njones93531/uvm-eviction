@@ -1,0 +1,15 @@
+Wed Dec 19 17:42:22 EST 2012
+there are 2394385 vertices 9319130 edges
+largest component graph obtained with 2388953 vertices 9313364 edges -- 9313364
+deg1: 0
+will be executed on 2388953 vertices 9313364 9313364 edges
+BC: virtual vertex coalesced top-down 1st phase gather 2nd phase
+virtualizing vertices! 2388953
+cuda parameters: 124 256 97 256
+coalesced
+preproc time: 2e-06 secs
+ordering time: 1e-06 secs
+kernel time: 19.394 secs
+total time: 19.394 secsfor 1000 bfs calls
+virt time: 0.048262 secsfor 1000 bfs calls
+Wed Dec 19 17:42:57 EST 2012

@@ -1,0 +1,13 @@
+Wed Dec 19 17:31:09 EST 2012
+there are 4847571 vertices 85702474 edges
+largest component graph obtained with 4843953 vertices 85691368 edges -- 85691368
+deg1: 0
+will be executed on 4843953 vertices 85691368 85691368 edges
+BC: edge-based parallelism
+cuda parameters: 579 256 138 256
+preproc time: 2e-06 secs
+ordering time: 1e-06 secs
+kernel time: 361.696 secs
+total time: 361.696 secsfor 1000 bfs calls
+virt time: 0 secsfor 1000 bfs calls
+Wed Dec 19 17:39:45 EST 2012

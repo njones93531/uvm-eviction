@@ -1,0 +1,26 @@
+Wed Dec 19 17:30:35 EST 2012
+vtxsize: 4
+edgesize: 4
+weightsize: 4
+vtxsize: 4
+edgesize: 4
+weightsize: 4
+erdem
+nVtx: 117185083
+nVtx: 117185083
+nEdge: 234370166
+nVtx: 117185083, nVtx: 117185083, nEdge: 234370166
+there are 117185083 vertices 234370166 edges
+largest component graph obtained with 3072441 vertices 234370166 edges -- 234370166
+deg1: 1
+will be executed on 3004647 vertices 234234578 234234578 edges
+BC: virtual vertex top-down 1st phase gather 2nd phase on compressed graph
+virtualizing vertices! 3004647
+cuda parameters: 483 256 109 256
+using gpu and 0 CPU thread
+preproc time: 2.83892 secs
+ordering time: 2e-06 secs
+kernel time: 776.833 secs
+total time: 779.672 secsfor 1000 bfs calls
+virt time: 0.278632 secsfor 1000 bfs calls
+Wed Dec 19 17:44:41 EST 2012
