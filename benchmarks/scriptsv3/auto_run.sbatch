@@ -12,7 +12,7 @@ module load mpi
 
 #cudaMalloc -> cudaMallocManaged
 input_file="../default/spmm-csr/spmm_csr_explicit.c"
-output_file="tmp.tmp"
+output_file="../default/spmm-csr/spmm_csr_managed.c"
 
 bash auto_conv.sh $input_file $output_file
 
