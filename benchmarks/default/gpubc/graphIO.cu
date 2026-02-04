@@ -77,8 +77,17 @@ void ReadGraphFromFile(FILE *fpin, VtxType *numofvertex, EdgeType **pxadj, VtxTy
 
 	nedges *=2;
 
+	/*
 	xadj = *pxadj = (EdgeType*) malloc((nvtxs+2)*sizeof(EdgeType));
 	adjncy = *padjncy = (VtxType*) malloc(nedges*sizeof(VtxType));
+	*/
+
+	cudaMallocManaged((void**)pxadj, (nvtxs + 2) * sizeof(EdgeType), cudaMemAttachGlobal);
+	xadj = *pxadj;
+
+	cudaMallocManaged((void**)padjncy, nedges * sizeof(VtxType), cudaMemAttachGlobal);
+	adjncy = *padjncy;
+
 	if (padjncyw)
 	  adjncyw = *padjncyw = (WeightType*) malloc(nedges*sizeof(WeightType));
 	if (ppvw)
@@ -251,8 +260,18 @@ void ReadGraphFromMMFile(FILE *matfp, VtxType *numofvertex, EdgeType **pxadj, Vt
 	}
 
 	*numofvertex = n;
+
+	/*
 	xadj = *pxadj = (EdgeType*) malloc((n+1) * sizeof(EdgeType));
 	adj = *padjncy = (VtxType*) malloc(onnz * sizeof(VtxType));
+	*/
+
+	cudaMallocManaged((void**)pxadj, (n + 1) * sizeof(EdgeType), cudaMemAttachGlobal);
+	xadj = *pxadj;
+
+	cudaMallocManaged((void**)padjncy, onnz * sizeof(VtxType), cudaMemAttachGlobal);
+	adj = *padjncy;
+
 	if (padjncyw)
 	  adjncyw = *padjncyw = (WeightType*) malloc (nnz*sizeof(WeightType));
 	if (ppvw)
@@ -413,9 +432,13 @@ void ReadBinary(char *filename, VtxType *numofvertex_r, VtxType *numofvertex_c, 
 	//printf("nVtx: %d, nVtx: %d, nEdge: %d\n", *numofvertex_r, *numofvertex_c, nnz);
 	std::cout<<"nVtx: "<<*numofvertex_r<<", nVtx: "<< *numofvertex_c<<", nEdge: "<< nnz<<std::endl;
 
+	/*
 	*pxadj = (EdgeType*) malloc (sizeof(EdgeType) * (*numofvertex_r+1));
 	*padj =  (VtxType*) malloc (sizeof(VtxType) * (nnz));
+	*/
 
+	cudaMallocManaged((void**)pxadj, sizeof(EdgeType) * (*numofvertex_r + 1), cudaMemAttachGlobal);
+	cudaMallocManaged((void**)padj, sizeof(VtxType) * nnz, cudaMemAttachGlobal);
 
 	if (padjw) {
 		*padjw = new WeightType[nnz];
@@ -521,6 +544,8 @@ bool ReadGraph(char *filename, VtxType *numofvertex, EdgeType **pxadj, VtxType *
 	}
 
 	ufclose(fpin);
+
+	cudaDeviceSynchronize();
 
 	if (pch == NULL)
 		return true;

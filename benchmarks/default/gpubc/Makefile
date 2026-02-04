@@ -59,7 +59,7 @@ OBJSCPU=ulib.o main.o fake_gpu_for_mic.o fake_mic_for_gpu.o format.o cc_cpu.o bc
 all: $(OBJS) gpu_bc
 
 %.o : %.cu
-	nvcc $(CUDA_FLAGS) -c $< -arch sm_80
+	nvcc $(CUDA_FLAGS) -c $< -arch sm_70
 
 gpu_bc: $(OBJS)
 	nvcc $(CUDA_FLAGS) -Xcompiler -fopenmp $(OBJS) -o gpu_bc

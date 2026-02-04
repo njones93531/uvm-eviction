@@ -202,9 +202,20 @@ int main(int argc, char** argv) {
     }
   }
 
+  /*
   EdgeIndex* lxadj = (EdgeIndex*) malloc(sizeof(EdgeIndex) * (vcount+1));
   VtxType* ladj = (VtxType*) malloc(sizeof(VtxType) * (ecount));
   VtxType* ltadj = (VtxType*) malloc(sizeof(VtxType) * (ecount));
+  */
+
+  EdgeIndex* lxadj;
+  VtxType*   ladj;
+  VtxType*   ltadj;
+
+  cudaMallocManaged(&lxadj, sizeof(EdgeIndex) * (n + 1));
+  cudaMallocManaged(&ladj, sizeof(VtxType) * nz);
+  cudaMallocManaged(&ltadj, sizeof(VtxType) * nz);
+
   vcount = 0;
   ecount = 0;
   lxadj[0] = 0;
@@ -227,8 +238,8 @@ int main(int argc, char** argv) {
 
   n = vcount;
   nz = ecount;
-  free(xadj); xadj = lxadj;
-  free(adj); adj = ladj;
+  cudaFree(xadj); xadj = lxadj;
+  cudaFree(adj); adj = ladj;
   free(tadj); tadj = ltadj;
 
   //printf("before malloc\n");
@@ -605,9 +616,9 @@ int main(int argc, char** argv) {
   time_virt = (1000000.0 * (t6.tv_sec-t5.tv_sec) + t6.tv_usec-t5.tv_usec) / 1000000.0;
   cout << "virtualization time: " <<time_virt<<" secs "<<"for "<<nb<<" bfs calls\n";
 
-  free(xadj);  xadj= NULL;
-  free(adj);   adj = NULL;
-  free(tadj);  tadj= NULL;
+  cudaFree(xadj);  xadj= NULL; 
+  cudaFree(adj);   adj = NULL;
+  cudaFree(tadj);  tadj= NULL;
 
   return 0;
 }

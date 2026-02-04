@@ -180,10 +180,14 @@ int cc_gpu_vertex_multi_spmv (EdgeIndex* h_vptrs, VtxType* h_vjs, VtxType n, Vtx
   float *d_cc;
   bool h_continue, *d_continue;
   
+
+  printf("cc_gpu_vertex_multi_spmv\n");
+  /*
   assert (cudaSuccess == cudaMalloc((void **)&d_vptrs, sizeof(EdgeIndex) * (n + 1)));
   assert (cudaSuccess == cudaMalloc((void **)&d_vjs, sizeof(VtxType) * h_vptrs[n]));
   assert (cudaSuccess == cudaMemcpy(d_vptrs, h_vptrs, sizeof(EdgeIndex) * (n + 1), cudaMemcpyHostToDevice));
   assert (cudaSuccess == cudaMemcpy(d_vjs, h_vjs, sizeof(VtxType) * h_vptrs[n], cudaMemcpyHostToDevice));
+  */
   
   /* number of BFSs at one kernel execution */
   int NB_BFS = 1024;
@@ -207,16 +211,24 @@ int cc_gpu_vertex_multi_spmv (EdgeIndex* h_vptrs, VtxType* h_vjs, VtxType n, Vtx
   assert(ipv % TPV == 0); /* this is for simplification. to avoid idle threads */
 
   TP *d_current, *d_neighbor, *d_visited;
-  assert (cudaSuccess == cudaMalloc((void **)&d_current, sizeof(TP) * ipv * n)); /* overall NB_BFS bits are allocated for all of these */
+  /*
+  assert (cudaSuccess == cudaMalloc((void **)&d_current, sizeof(TP) * ipv * n)); 
   assert (cudaSuccess == cudaMalloc((void **)&d_neighbor, sizeof(TP) * ipv * n));
   assert (cudaSuccess == cudaMalloc((void **)&d_visited, sizeof(TP) * ipv * n));
+  */
+  cudaMallocManaged((void **)&d_current, sizeof(TP) * ipv * n, cudaMemAttachGlobal); /* overall NB_BFS bits are allocated for all of these */
+  cudaMallocManaged((void **)&d_neighbor, sizeof(TP) * ipv * n, cudaMemAttachGlobal);
+  cudaMallocManaged((void **)&d_visited, sizeof(TP) * ipv * n, cudaMemAttachGlobal);
+
+  //assert (cudaSuccess == cudaMalloc((void **)&d_dist, sizeof(VtxType)));
+  cudaMallocManaged((void **)&d_dist, sizeof(VtxType), cudaMemAttachGlobal);
   
-  assert (cudaSuccess == cudaMalloc((void **)&d_dist, sizeof(VtxType)));
-  
-  assert (cudaSuccess == cudaMalloc((void **)&d_cc, sizeof(float) * n));
+  //assert (cudaSuccess == cudaMalloc((void **)&d_cc, sizeof(float) * n));
+  cudaMallocManaged((void **)&d_cc, sizeof(float) * n, cudaMemAttachGlobal);
   assert (cudaSuccess == cudaMemset(d_cc, 0, sizeof(float) * n));
   
-  assert (cudaSuccess == cudaMalloc((void **)&d_continue, sizeof(bool)));
+  //assert (cudaSuccess == cudaMalloc((void **)&d_continue, sizeof(bool)));
+  cudaMallocManaged((void **)&d_continue, sizeof(bool), cudaMemAttachGlobal);
   
   std::cout<<"n * TPV = "<<n*TPV<<"\t max limit "<<std::numeric_limits<VtxType>::max()<<std::endl; 
   assert (n  < std::numeric_limits<VtxType>::max()/TPV); //otherwise block thread size will go negative
@@ -289,15 +301,18 @@ int cc_gpu_vertex_multi_spmv (EdgeIndex* h_vptrs, VtxType* h_vjs, VtxType n, Vtx
     gettimeofday(&gt1, 0);
 #endif
    
-    /*if(i == 0){
+    //cudaDeviceSynchronize();
+    /*
+    if(i == 0){
       TP* h_current = (TP*)malloc(sizeof(TP) * ipv * n);
       cudaMemcpy(h_current, d_current, sizeof(TP) * ipv * n, cudaMemcpyDeviceToHost);
       for(int j = 0; j < 40; j++) {
 	int id = (j+1)*NB_BFS/SZ - j/SZ - 1;
-	printf("%d -- %d -- %llu\n", j, id, h_current[id]); 
+	printf("%d -- %d -- %llu\n", j, id, d_current[id]); 
       }
-      free(h_current);
-    }*/
+      free(d_current);
+    }
+    */
 
     do{
 #ifdef TIMER
@@ -305,7 +320,7 @@ int cc_gpu_vertex_multi_spmv (EdgeIndex* h_vptrs, VtxType* h_vjs, VtxType n, Vtx
 #endif
       assert (cudaSuccess == cudaMemset(d_continue, 0, sizeof(bool)));
 
-      cc_forward_vertex_multi_spmv<<<grid2, threads2>>> (d_vptrs, d_vjs, d_neighbor, d_current, d_visited, d_continue, n, TPV, ipv);
+      cc_forward_vertex_multi_spmv<<<grid2, threads2>>> (h_vptrs, h_vjs, d_neighbor, d_current, d_visited, d_continue, n, TPV, ipv);
       cc_vertex_set_int_multi_spmv<<<1,1>>>(d_dist, ++h_dist);
 
       cc_intermediate_vertex_multi_spmv<<<grid2,threads2>>> (d_cc, n, d_neighbor, d_current, d_visited, d_dist, TPV, ipv);
