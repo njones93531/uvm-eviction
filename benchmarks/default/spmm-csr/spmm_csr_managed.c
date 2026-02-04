@@ -108,11 +108,11 @@ int main(int argc, char *argv[]) {
     }
 
     srand(time(NULL));
-    int*   hA_csrOffsets;
-    int*   hA_columns;
-    float* hA_values;
-    float* hB;
-    float* hC;
+
+
+
+
+
     float* hC_result;
     float alpha           = 1.0f;
     float beta            = 0.0f;
@@ -122,11 +122,6 @@ int main(int argc, char *argv[]) {
     float *hA_values, *hB, *hC;
 
     int before = (A_num_rows + 1);
-    hA_csrOffsets = (int*)malloc(before * sizeof(int));
-    hA_columns    = (int*)malloc(A_nnz * sizeof(int));
-    hA_values     = (float*)malloc(A_nnz * sizeof(float));
-    hB            = (float*)malloc(B_size * sizeof(float));
-    hC            = (float*)malloc(C_size * sizeof(float));
 
     if (CPU) {
         hC_result = (float*)malloc(C_size * sizeof(float));
@@ -202,7 +197,7 @@ int main(int argc, char *argv[]) {
                                  CUSPARSE_OPERATION_NON_TRANSPOSE,
                                  &alpha, matA, matB, &beta, matC, CUDA_R_32F,
                                  CUSPARSE_SPMM_ALG_DEFAULT, &bufferSize) )
-    CHECK_CUDA( cudaMallocManaged(&hBuffer,  bufferSize), cudaMemAttachGlobal )
+    CHECK_CUDA( cudaMallocManaged(&hBuffer, bufferSize, cudaMemAttachGlobal) )
 
     // execute preprocess (optional)
     CHECK_CUSPARSE( cusparseSpMM_preprocess(
@@ -227,6 +222,9 @@ int main(int argc, char *argv[]) {
     //--------------------------------------------------------------------------
     // device result check
     int correct = 1;
+
+    
+    cudaDeviceSynchronize();
 
     if (CPU) {
 		for (size_t i = 0; i < C_size; i++)
@@ -257,11 +255,11 @@ int main(int argc, char *argv[]) {
 	cudaFree(hB);
 	cudaFree(hC);
 
-	free(hA_csrOffsets);
-	free(hA_columns);
-	free(hA_values);
-	free(hB);
-    free(hC);
+cudaFree(hA_csrOffsets);
+cudaFree(hA_columns);
+cudaFree(hA_values);
+cudaFree(hB);
+cudaFree(hC);
 
     if (CPU) free(hC_result);
 

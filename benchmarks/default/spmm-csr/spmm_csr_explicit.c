@@ -236,6 +236,9 @@ int main(int argc, char *argv[]) {
                            cudaMemcpyDeviceToHost) )
     int correct = 1;
 
+    
+    cudaDeviceSynchronize();
+
     if (CPU) {
 		for (size_t i = 0; i < C_size; i++)
 			hC_result[i] = 0.0f;
