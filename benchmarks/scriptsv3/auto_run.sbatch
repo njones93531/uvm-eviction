@@ -2,7 +2,7 @@
 #SBATCH -N 1
 #SBATCH -w voltron
 #SBATCH -J faults
-	###SBATCH --exclusive
+#SBATCH --exclusive
 #SBATCH -t 1:00:00
 #SBATCH -o slurm_out/%x.%j.out
 
