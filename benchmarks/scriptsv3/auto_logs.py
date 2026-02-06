@@ -58,6 +58,24 @@ def reset_uvm_module():
 
     print("nvidia-uvm reset")
 
+def init_syslogger(logfile):
+    # this is required for voltron because it doesn't support kernel-open and udev has to create this file, 
+    # which has a slight asynchronous delay
+    dev_num = get_device_number("hpcs_logger")
+    counter = 0
+    while not os.path.exists("/dev/hpcs_logger"):
+        counter = counter + 1
+        sh.sudo("mknod", "-m", "0666", "/dev/hpcs_logger", "c", str(dev_num), "0")
+        if counter > 10:
+            print("/dev/hpcs_logger still does not exist after 10 seconds; check dmesg for errors")
+            sys.exit(1)
+        time.sleep(1)
+    oldpwd = os.getcwd()
+    os.chdir(config.SYSLOG_PATH)
+    sh.make()
+    os.chdir(oldpwd)
+    process = subprocess.Popen([f"{config.SYSLOG_PATH}/{config.SYSLOG_EXE}", logfile])#, creationflags=subprocess.DETACHED_PROCESS)
+    return process
 
 def main():
     os.makedirs(LOGDIR, exist_ok=True)
