@@ -68,21 +68,41 @@ float get_size(int A_r, int A_nnz, int Bs, int Cs) {
     return (alloc0 + alloc1 + alloc2 + alloc3 + alloc4) / (1024. * 1024. * 1024.);
 }
 
+// Function to generate matrix sizes given a target GB
+void generate_sizes(double target_gb, double density, int *A_r, int *A_c, int *A_nnz, int *B_c) {
+    // Assume A_r = A_c for simplicity
+    int guess = 128; // initial guess
+    *A_r = guess;
+    *A_c = guess;
+
+    // Iteratively increase until we reach approx target size
+    for (;;) {
+        *A_nnz = (int)(density * (*A_r) * (*A_c));
+        *B_c = *A_c;
+        int Bs = (*A_c) * (*B_c);
+        int Cs = (*A_r) * (*B_c);
+        double size_gb = get_size(*A_r, *A_nnz, Bs, Cs);
+        if (size_gb >= target_gb)
+            break;
+        *A_r += 128; // increment rows/cols
+        *A_c += 128;
+    }
+}
+
 int main(int argc, char *argv[]) {
-    if (argc != 6) {
-        fprintf(stderr,
-                "Usage: %s <A_num_rows> <A_num_cols> <A_nnz> <B_num_cols> <CPU>\n",
-                argv[0]);
+    if (argc != 4) {
+        fprintf(stderr, "Usage: %s <target_gb> <density> <CPU?>\n", argv[0]);
         return EXIT_FAILURE;
     }
 
+    double target_gb = atof(argv[1]);
+    double density   = atof(argv[2]); // e.g., 0.01 for 1%
     int CPU = atoi(argv[5]);
 
-    int   A_num_rows      = atoi(argv[1]);
-    int   A_num_cols      = atoi(argv[2]);
-    int   A_nnz           = atoi(argv[3]);
+    int A_num_rows, A_num_cols, A_nnz, B_num_cols;
+    generate_sizes(target_gb, density, &A_num_rows, &A_num_cols, &A_nnz, &B_num_cols);
+
     int   B_num_rows      = A_num_cols;
-    int   B_num_cols      = atoi(argv[4]);
     int   ldb             = B_num_rows;
     int   ldc             = A_num_rows;
     int   B_size          = ldb * B_num_cols;

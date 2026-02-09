@@ -17,10 +17,7 @@ CUDA_TOOLKIT := $(shell dirname $$(command -v nvcc))/..
 INC          := -I$(CUDA_TOOLKIT)/include
 LIBS         := -lcusparse
 
-all: spmm_csr_example spmm_csr spmm_csr_explicit
-
-spmm_csr_example: spmm_csr_example.c
-	nvcc $(INC) spmm_csr_example.c -o spmm_csr_example $(LIBS)
+all: spmm_csr spmm_csr_explicit
 
 spmm_csr: spmm_csr.c
 	nvcc $(INC) spmm_csr.c -o spmm_csr $(LIBS)
@@ -32,7 +29,6 @@ spmm_csr_managed: spmm_csr_managed.c
 	nvcc $(INC) spmm_csr_managed.c -o spmm_csr_managed $(LIBS)
 
 clean:
-	rm -f spmm_csr_example
 	rm -f spmm_csr
 	rm -f spmm_csr_explicit
 
