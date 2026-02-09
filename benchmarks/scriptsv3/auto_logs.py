@@ -12,9 +12,6 @@ BENCHMARK_DIR = "../default/spmm-csr"
 BENCHMARK_EXE = "./spmm_csr"
 KERNEL_ARGS = {}
 
-LOGDIR = f"{BENCHMARK_DIR}/log_single"
-KLOG = f"{LOGDIR}/spmm_klog.txt"
-
 def run(cmd, cwd=None):
     print(f"+ {' '.join(cmd)}")
     subprocess.check_call(cmd, cwd=cwd)
@@ -86,21 +83,14 @@ def init_syslogger(logfile):
     process = subprocess.Popen([exe, logfile])#, creationflags=subprocess.DETACHED_PROCESS)
     return process
 
-def run_spmm():
+def run_spmm(arg_set):
     print("Build benchmark")
     os.chdir(f"{BENCHMARK_DIR}")
     print(os.getcwd())
     sh.make("-j")
     print("Starting execution") 
-
-    arg_sets = [
-        [16,   16,   20,   20,   1],
-        [160,  160,  400,  160,  1],
-        [2048, 2048, 8192, 1024, 1],
-    ]
     
-    #for args in arg_sets:
-    cmd = ["taskset", "0xFFFFFFFF", BENCHMARK_EXE] + [str(a) for a in arg_sets[0]]
+    cmd = ["taskset", "0xFFFFFFFF", BENCHMARK_EXE] + [str(a) for a in arg_set]
     print("Running benchmark:", cmd)
     subprocess.run(cmd, check=True)
    
@@ -114,7 +104,6 @@ def run_spmm():
     print("exit code:", exit_code)
 
 def main():
-    os.makedirs(LOGDIR, exist_ok=True)
 
     module_dir = os.path.expanduser(
         f"~{config.DRIVER_DIR}/{config.KERNEL_VERSION}/{config.KERNEL_VARIANT}/{config.KERNEL_LICENSE}"
@@ -125,11 +114,20 @@ def main():
 
     load_uvm(f"{module_dir}/nvidia-uvm.ko", KERNEL_ARGS)
 
+    arg_sets = [
+        [0.1,   0.1,   1],
+    ]
+
+    benchmark="spmm-csr"
+    logdir = f"{BENCHMARK_DIR}/{config.KERNEL_VERSION}_{config.KERNEL_VARIANT}_{arg_sets[0][0]}_{benchmark}"
+    klog = f"{logdir}/klog_{benchmark}.txt"
+    os.makedirs(logdir, exist_ok=True)
+
     #TODO add spmm-csr run
     #    collect metrics
-    slog_proc = init_syslogger(KLOG)
+    slog_proc = init_syslogger(klog)
 
-    run_spmm()
+    size = run_spmm(arg_sets[0])
 
     #at the end
     slog_proc.kill()
