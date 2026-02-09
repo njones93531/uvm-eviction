@@ -58,6 +58,14 @@ def reset_uvm_module():
 
     print("nvidia-uvm reset")
 
+def get_device_number(device_name):
+    with open("/proc/devices") as f:
+        for line in f:
+            parts = line.strip().split()
+            if len(parts) == 2 and parts[1] == device_name:
+                return int(parts[0])
+    return None
+
 def init_syslogger(logfile):
     # this is required for voltron because it doesn't support kernel-open and udev has to create this file, 
     # which has a slight asynchronous delay
@@ -71,11 +79,39 @@ def init_syslogger(logfile):
             sys.exit(1)
         time.sleep(1)
     oldpwd = os.getcwd()
-    os.chdir(config.SYSLOG_PATH)
+    os.chdir(os.path.expanduser(f"~{config.SYSLOG_PATH}"))
     sh.make()
     os.chdir(oldpwd)
-    process = subprocess.Popen([f"{config.SYSLOG_PATH}/{config.SYSLOG_EXE}", logfile])#, creationflags=subprocess.DETACHED_PROCESS)
+    exe = os.path.expanduser(f"~{config.SYSLOG_PATH}/{config.SYSLOG_EXE}")
+    process = subprocess.Popen([exe, logfile])#, creationflags=subprocess.DETACHED_PROCESS)
     return process
+
+def run_spmm():
+    print("Build benchmark")
+    os.chdir(f"{BENCHMARK_DIR}")
+    print(os.getcwd())
+    sh.make("-j")
+    print("Starting execution") 
+
+    arg_sets = [
+        [16,   16,   20,   20,   1],
+        [160,  160,  400,  160,  1],
+        [2048, 2048, 8192, 1024, 1],
+    ]
+    
+    #for args in arg_sets:
+    cmd = ["taskset", "0xFFFFFFFF", BENCHMARK_EXE] + [str(a) for a in arg_sets[0]]
+    print("Running benchmark:", cmd)
+    subprocess.run(cmd, check=True)
+   
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    print(f"Running command {cmd}")
+    output, err = p.communicate()
+    exit_code = p.wait()
+    
+    print("out:", output)
+    print("err:", err)
+    print("exit code:", exit_code)
 
 def main():
     os.makedirs(LOGDIR, exist_ok=True)
@@ -91,8 +127,12 @@ def main():
 
     #TODO add spmm-csr run
     #    collect metrics
+    slog_proc = init_syslogger(KLOG)
+
+    run_spmm()
 
     #at the end
+    slog_proc.kill()
     reset_uvm_module()
 
 if __name__ == "__main__":

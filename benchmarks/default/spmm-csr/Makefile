@@ -25,7 +25,7 @@ spmm_csr_example: spmm_csr_example.c
 spmm_csr: spmm_csr.c
 	nvcc $(INC) spmm_csr.c -o spmm_csr $(LIBS)
 
-spmm_csr_example: spmm_csr_explicit.c
+spmm_csr_explicit: spmm_csr_explicit.c
 	nvcc $(INC) spmm_csr_explicit.c -o spmm_csr_explicit $(LIBS)
 
 spmm_csr_managed: spmm_csr_managed.c
