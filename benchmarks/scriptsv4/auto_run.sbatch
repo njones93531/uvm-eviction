@@ -23,6 +23,14 @@ cd ~/uvm-eviction/tools/fault_plotsv3
 
 # TODO get rid of hardcoded nonsense
 # 	may make more sense doing in auto_logs
+
+# Have already set up env on voltron
+#	python3 -m venv ~/venvs/uvm
+#	source ~/venvs/uvm/bin/activate
+#	pip install --upgrade pip
+#	pip install pandas matplotlib numpy psutil
+
+source ~/venvs/uvm/bin/activate
 python3 metric_plot.py ../../benchmarks/default/spmm-csr/x86_64-555.42.02_faults-new_1_spmm-csr/klog_spmm-csr.txt -o metrics_stats_relative
 
 # at least set module to default config; should probably reinstall vanilla
