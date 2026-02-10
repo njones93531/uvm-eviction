@@ -115,16 +115,19 @@ def main():
     load_uvm(f"{module_dir}/nvidia-uvm.ko", KERNEL_ARGS)
 
     arg_sets = [
-        [0.1,   0.1,   1],
+        [1,   0.1,   1],
     ]
+
+    #TODO fix this hardcoded stuff
+    #       getting gpu oversubscription percentage
+    gpu_percentage = int((arg_sets[0][0] / 60) * 100) 
 
     benchmark="spmm-csr"
     logdir = f"{BENCHMARK_DIR}/{config.KERNEL_VERSION}_{config.KERNEL_VARIANT}_{arg_sets[0][0]}_{benchmark}"
     klog = f"{logdir}/klog_{benchmark}.txt"
     os.makedirs(logdir, exist_ok=True)
 
-    #TODO add spmm-csr run
-    #    collect metrics
+    #collect logs 
     slog_proc = init_syslogger(klog)
 
     size = run_spmm(arg_sets[0])
