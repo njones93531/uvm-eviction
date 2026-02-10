@@ -1,3 +1,9 @@
+usage:
+	#for preview
+	bash conv.sh input.cu <string of policies (hhd)> 
+	#to file
+	bash conv.sh input.cu <string of policies (hhd)> > output.cu
+
 m = do nothing (migrate)
 
 d = Pin to device 
