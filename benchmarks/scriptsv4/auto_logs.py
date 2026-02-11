@@ -5,11 +5,10 @@ import subprocess
 import time
 import sys
 import sh
+import argparse
 
 import config
 
-BENCHMARK_DIR = "../default/spmm-csr"
-BENCHMARK_EXE = "./spmm_csr"
 KERNEL_ARGS = {}
 
 def run(cmd, cwd=None):
@@ -83,14 +82,14 @@ def init_syslogger(logfile):
     process = subprocess.Popen([exe, logfile])#, creationflags=subprocess.DETACHED_PROCESS)
     return process
 
-def run_spmm(arg_set):
+def run_spmm(benchmark_dir, benchmark_exe, arg_set):
     print("Build benchmark")
-    os.chdir(f"{BENCHMARK_DIR}")
+    os.chdir(f"{benchmark_dir}")
     print(os.getcwd())
     sh.make("-j")
     print("Starting execution") 
     
-    cmd = ["taskset", "0xFFFFFFFF", BENCHMARK_EXE] + [str(a) for a in arg_set]
+    cmd = ["taskset", "0xFFFFFFFF", benchmark_exe] + [str(a) for a in arg_set]
     print("Running benchmark:", cmd)
     subprocess.run(cmd, check=True)
    
@@ -104,6 +103,16 @@ def run_spmm(arg_set):
     print("exit code:", exit_code)
 
 def main():
+    parser = argparse.ArgumentParser(description="Run UVM benchmark experiment")
+    parser.add_argument("--benchmark-dir", required=True,
+                        help="Path to benchmark directory")
+    parser.add_argument("--benchmark-exe", required=True,
+                        help="Benchmark executable (relative to benchmark-dir)")
+
+    args = parser.parse_args()
+
+    benchmark_dir = args.benchmark_dir
+    benchmark_exe = args.benchmark_exe
 
     module_dir = os.path.expanduser(
         f"~{config.DRIVER_DIR}/{config.KERNEL_VERSION}/{config.KERNEL_VARIANT}/{config.KERNEL_LICENSE}"
@@ -118,19 +127,20 @@ def main():
         [1,   0.1,   1],
     ]
 
-    #TODO fix this hardcoded stuff
     #       getting gpu oversubscription percentage
     gpu_percentage = int((arg_sets[0][0] / 60) * 100) 
 
-    benchmark="spmm-csr"
-    logdir = f"{BENCHMARK_DIR}/{config.KERNEL_VERSION}_{config.KERNEL_VARIANT}_{arg_sets[0][0]}_{benchmark}"
-    klog = f"{logdir}/klog_{benchmark}.txt"
+    #TODO fix this hardcoded stuff
+    benchmark_name = os.path.basename(benchmark_dir)
+    print(benchmark_name)
+    logdir = f"{benchmark_dir}/{config.KERNEL_VERSION}_{config.KERNEL_VARIANT}_{arg_sets[0][0]}_{benchmark_name}"
+    klog = f"{logdir}/klog_{benchmark_name}.txt"
     os.makedirs(logdir, exist_ok=True)
 
     #collect logs 
     slog_proc = init_syslogger(klog)
 
-    size = run_spmm(arg_sets[0])
+    size = run_spmm(benchmark_dir, benchmark_exe, arg_sets[0])
 
     #at the end
     slog_proc.kill()
