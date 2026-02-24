@@ -90,7 +90,6 @@ def run_spmm(benchmark_dir, benchmark_exe, arg_set):
     print("Starting execution") 
     
     cmd = ["taskset", "0xFFFFFFFF", benchmark_exe] + [str(a) for a in arg_set]
-    print("Running benchmark:", cmd)
     subprocess.run(cmd, check=True)
    
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE)

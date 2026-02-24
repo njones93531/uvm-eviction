@@ -13,6 +13,8 @@ module load mpi
 BENCHMARK_DIR="../default/spmm-csr"
 BENCHMARK_EXE="./spmm_csr"
 
+RELATIVE_FIG_DIR="../../figs/voltron/metrics_stats_relative"
+
 if [ -z "$1" ]; then
     echo "Usage: $0 <mode>"
     echo "  mode: normal | managed"
@@ -71,19 +73,22 @@ python3 -u auto_logs.py \
 	--benchmark-dir "$BENCHMARK_DIR" \
 	--benchmark-exe "$BENCHMARK_EXE"
 
-cd ~/uvm-eviction/tools/fault_plotsv3
-
-# TODO get rid of hardcoded nonsense
-# 	may make more sense doing in auto_logs
+cd ~/uvm-eviction/tools/fault_plotsv4
 
 # Have already set up env on voltron
 #	python3 -m venv ~/venvs/uvm
 #	source ~/venvs/uvm/bin/activate
 #	pip install --upgrade pip
 #	pip install pandas matplotlib numpy psutil
-
 source ~/venvs/uvm/bin/activate
-python3 metric_plot.py ../../benchmarks/default/spmm-csr/x86_64-555.42.02_faults-new_1_spmm-csr/klog_spmm-csr.txt -o metrics_stats_relative
+
+# TODO get rid of hardcoded nonsense
+# 	may make more sense doing in auto_logs
+output=$(python3 main.py $RELATIVE_FIG_DIR/spmm-csr/default_x86_64-555.42.02_faults-new_1_spmm-csr.txt)
+strategy=$(echo "$output" | grep "Final Strategy:" | sed 's/Final Strategy: //')
+echo $strategy
+
+#TODO apply strategy and run it.
 
 # at least set module to default config; should probably reinstall vanilla
 # 	done in auto_logs.py
