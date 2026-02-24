@@ -1,6 +1,7 @@
 import pandas as pd
 from pathlib import Path
 import argparse
+import heapq
 
 def parse_metrics_relative_file(filepath):
     filepath = Path(filepath)
@@ -101,6 +102,77 @@ def classify_d_with(data_df, classifier, scalar, p=False, apply_m=False, perf_df
     if(p):
         print(data_df[['label', 'strategy']])
 
+def knapsack(df, cap, cost_str, val_str, threshold=0.02):
+    """
+    Solve the knapsack problem using a branch-and-bound approach, 
+    with a heuristic to pre-include low-cost items.
+
+    Args:
+        capacity (float): Maximum cost allowed.
+        costs (list of float): List of item costs.
+        values (list of float): List of item values.
+        threshold (float): Cost threshold for heuristic inclusion.
+
+    Returns:
+        list of int: Indexes of items to include in the knapsack.
+    """
+    capacity = cap
+    costs = df[cost_str].values
+    values = df[val_str].values
+    n = len(costs)
+
+
+    # Heuristically include items with cost < threshold
+    low_cost_items = [i for i in range(n) if costs[i] < threshold]
+    included_items = low_cost_items[:]
+    remaining_capacity = capacity - sum(costs[i] for i in low_cost_items)
+    total_value = sum(values[i] for i in low_cost_items)
+
+    # Filter remaining items
+    remaining_items = [(i, costs[i], values[i]) for i in range(n) if i not in low_cost_items]
+    if not remaining_items or remaining_capacity <= 0:
+        return included_items
+
+    # Sort remaining items by value-to-cost ratio
+    items = sorted(remaining_items, key=lambda x: -x[2] / x[1])
+
+    # Max heap for branch-and-bound
+    max_heap = []
+    best_value = total_value
+    best_solution = included_items
+
+    # Push the root node
+    heapq.heappush(max_heap, (-total_value, 0, 0, total_value, included_items))
+
+    while max_heap:
+        neg_value, level, current_cost, current_value, solution = heapq.heappop(max_heap)
+        neg_value = -neg_value
+
+        if level == len(items) or current_cost > remaining_capacity:
+            continue
+
+        # Update the best solution
+        if current_value > best_value:
+            best_value = current_value
+            best_solution = solution
+
+        # Get the current item
+        index, cost, value = items[level]
+
+        # Include the current item (if possible)
+        if current_cost + cost <= remaining_capacity:
+            heapq.heappush(
+                max_heap,
+                (-neg_value - value, level + 1, current_cost + cost, current_value + value, solution + [index])
+            )
+
+        # Exclude the current item
+        heapq.heappush(
+            max_heap,
+            (-neg_value, level + 1, current_cost, current_value, solution)
+        )
+
+    return best_solution
 
 def predict_unseen_strat(data_df):
     classify_apps_hardcode(data_df)
@@ -133,11 +205,13 @@ def predict_unseen_strat(data_df):
         df2['cond1'] = df2[f'd_mean_{bc}'] > df2['thold1']
         df2['cond2'] = df2[f'dr_intra_mean_{bc}'] > df2['thold2']
         df2['m_prediction'] = df2['cond1'] & df2['cond2']
-        d_metric = (f'tr_median_{bc}_OR_ts_rel_median_{bc}', 1)
-        print("\nTesting d_metric")
-        print(df2.head())
-        print(df2['tr_median_{bc}_OR_ts_rel_median_{bc}'])
-        classify_d_with(df2.copy(), d_metric[0], d_metric[1], p=True, apply_m=True)
+        #d_metric = (f'tr_median_{bc}_OR_ts_rel_median_{bc}', 1)
+        #d_metric = (f'tr_median_1000', 1)
+        d_metric = (f'ts_rel_median_1000', 1)
+        #print(df2['tr_median_1000'])
+        #print(df2['ts_rel_median_1000'])
+        #classify_d_with(df2.copy(), d_metric[0], d_metric[1], p=True, apply_m=True)
+        classify_d_with(df2, d_metric[0], d_metric[1], p=True, apply_m=True)
         return ''.join(df2['strategy'].values)
 
     return None 
