@@ -89,6 +89,36 @@ strategy=$(echo "$output" | grep "Final Strategy:" | sed 's/Final Strategy: //')
 echo $strategy
 
 #TODO apply strategy and run it.
+#	this is still horribly hardcoded
+cd ~/uvm-eviction/benchmarks/scriptsv4
+
+STRATEGY_DIR="../strategied/spmm-csr_strat"
+
+echo "Copying benchmark dir"
+rm -rf "$STRATEGY_DIR"
+cp -r "$BENCHMARK_DIR" "$STRATEGY_DIR"
+
+if [ "$MODE" == "managed" ]; then
+	IN_FILE="$STRATEGY_DIR/spmm_csr_explicit.c"
+	OUT_FILE="${IN_FILE}_new.c"
+else
+	IN_FILE="$STRATEGY_DIR/spmm_csr.c"
+	OUT_FILE="${IN_FILE}_new.c"
+fi
+
+bash apply_strat.sh $IN_FILE $strategy >  $OUT_FILE
+mv $OUT_FILE $IN_FILE
+
+echo "Building generated benchmark"
+cd "$STRATEGY_DIR"
+
+if ! make -j; then
+	echo "Make failed; Conversion requires manual effort"
+	scancel $SLURM_JOB_ID
+	exit 1
+fi
+
+$BENCHMARK_EXE 1 0.1 1
 
 # at least set module to default config; should probably reinstall vanilla
 # 	done in auto_logs.py
