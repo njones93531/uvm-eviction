@@ -83,7 +83,8 @@ fi
 #	then we can use that later in this bash
 python3 -u auto_logs.py \
 	--benchmark-dir "$BENCHMARK_DIR" \
-	--benchmark-exe "$BENCHMARK_EXE"
+	--benchmark-exe "$BENCHMARK_EXE" \
+	--args 1 0.1 1
 
 cd ~/uvm-eviction/tools/fault_plotsv4
 

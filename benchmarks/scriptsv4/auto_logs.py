@@ -107,6 +107,12 @@ def main():
                         help="Path to benchmark directory")
     parser.add_argument("--benchmark-exe", required=True,
                         help="Benchmark executable (relative to benchmark-dir)")
+    parser.add_argument(
+        "--args",
+        nargs='+',
+        metavar='ARG',
+        help="Arguments to pass to the benchmark exe: --args 1 0.1 1"
+    )
 
     args = parser.parse_args()
 
@@ -122,24 +128,24 @@ def main():
 
     load_uvm(f"{module_dir}/nvidia-uvm.ko", KERNEL_ARGS)
 
-    arg_sets = [
-        [1,   0.1,   1],
-    ]
-
-    #       getting gpu oversubscription percentage
-    gpu_percentage = int((arg_sets[0][0] / 60) * 100) 
+    #getting gpu oversubscription percentage
+    # TODO  this is hardcoded
+    #       to be the first argument
+    gpu_percentage = int((int(args.args[0]) / 60) * 100) 
 
     #TODO fix this hardcoded stuff
     benchmark_name = os.path.basename(benchmark_dir)
     print(benchmark_name)
-    logdir = f"{benchmark_dir}/{config.KERNEL_VERSION}_{config.KERNEL_VARIANT}_{arg_sets[0][0]}_{benchmark_name}"
+    logdir = f"{benchmark_dir}/{config.KERNEL_VERSION}_{config.KERNEL_VARIANT}_{args.args[0]}_{benchmark_name}"
     klog = f"{logdir}/klog_{benchmark_name}.txt"
+    print(logdir)
+    print(klog)
     os.makedirs(logdir, exist_ok=True)
 
     #collect logs 
     slog_proc = init_syslogger(klog)
 
-    size = run_spmm(benchmark_dir, benchmark_exe, arg_sets[0])
+    size = run_spmm(benchmark_dir, benchmark_exe, args.args)
 
     #at the end
     slog_proc.kill()
