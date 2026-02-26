@@ -10,18 +10,25 @@ export IGNORE_CC_MISMATCH=1
 module load cuda/12.5
 module load mpi
 
-BENCHMARK_DIR="../default/spmm-csr"
-BENCHMARK_EXE="./spmm_csr"
-
 RELATIVE_FIG_DIR="../../figs/voltron/metrics_stats_relative"
 
 if [ -z "$1" ]; then
-    echo "Usage: $0 <mode>"
+    echo "Usage: $0 <mode> <dir>"
     echo "  mode: normal | managed"
     exit 1
 fi
 
 MODE="$1"
+
+#given something like:
+#	../default/spmm-csr
+BENCHMARK_DIR="$2"
+#	spmm-csr
+BENCH_NAME=$(basename "$BENCHMARK_DIR")
+
+#TODO figure some way to find which file to edit and 
+# 	what the exe is named
+BENCHMARK_EXE="./spmm_csr"
 
 if [ "$MODE" != "normal" ] && [ "$MODE" != "managed" ]; then
     echo "Error: mode must be 'normal' or 'managed'"
@@ -69,6 +76,8 @@ fi
 
 #export TIMEOUT=12000
 
+#TODO needs to take benchmark psize as a variable
+#	then we can use that later in this bash
 python3 -u auto_logs.py \
 	--benchmark-dir "$BENCHMARK_DIR" \
 	--benchmark-exe "$BENCHMARK_EXE"
@@ -84,7 +93,9 @@ source ~/venvs/uvm/bin/activate
 
 # TODO get rid of hardcoded nonsense
 # 	may make more sense doing in auto_logs
-output=$(python3 main.py $RELATIVE_FIG_DIR/spmm-csr/default_x86_64-555.42.02_faults-new_1_spmm-csr.txt)
+#		size?
+#		
+output=$(python3 main.py $RELATIVE_FIG_DIR/$BENCH_NAME/default_x86_64-555.42.02_faults-new_1_$BENCH_NAME.txt)
 strategy=$(echo "$output" | grep "Final Strategy:" | sed 's/Final Strategy: //')
 echo $strategy
 
@@ -92,7 +103,7 @@ echo $strategy
 #	this is still horribly hardcoded
 cd ~/uvm-eviction/benchmarks/scriptsv4
 
-STRATEGY_DIR="../strategied/spmm-csr_strat"
+STRATEGY_DIR="../strategied/${BENCH_NAME}_strat"
 
 echo "Copying benchmark dir"
 rm -rf "$STRATEGY_DIR"
