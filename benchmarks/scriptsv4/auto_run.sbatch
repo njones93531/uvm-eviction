@@ -16,7 +16,7 @@ KERNEL_VARIANT="faults-new"
 RELATIVE_FIG_DIR="../../figs/voltron/metrics_stats_relative"
 
 if [ -z "$1" ]; then
-    echo "Usage: $0 <mode> <dir>"
+    echo "Usage: $0 <mode> <dir> <args>"
     echo "  mode: normal | managed"
     exit 1
 fi
@@ -32,6 +32,15 @@ BENCH_NAME=$(basename "$BENCHMARK_DIR")
 #TODO figure some way to find which file to edit and 
 # 	what the exe is named
 BENCHMARK_EXE="./spmm_csr"
+
+# Pass args as remaining arguments: ./auto_run.sbatch <mode> <dir> 1 0.1 1 
+shift 2
+BENCH_ARGS=("$@")
+
+echo "MODE:          $MODE"
+echo "BENCHMARK_DIR: $BENCHMARK_DIR"
+echo "BENCH_NAME:    $BENCH_NAME"
+echo "BENCH_ARGS:    ${BENCH_ARGS[@]}"
 
 if [ "$MODE" != "normal" ] && [ "$MODE" != "managed" ]; then
     echo "Error: mode must be 'normal' or 'managed'"
@@ -77,14 +86,10 @@ if [ "$MODE" == "managed" ]; then
 	cd - > /dev/null
 fi
 
-#export TIMEOUT=12000
-
-#TODO needs to take benchmark psize as a variable
-#	then we can use that later in this bash
 python3 -u auto_logs.py \
 	--benchmark-dir "$BENCHMARK_DIR" \
 	--benchmark-exe "$BENCHMARK_EXE" \
-	--args 1 0.1 1
+	--args "${BENCH_ARGS[@]}" || exit 1
 
 cd ~/uvm-eviction/tools/fault_plotsv4
 
@@ -99,7 +104,7 @@ source ~/venvs/uvm/bin/activate
 # 	may make more sense doing in auto_logs
 #		size?
 #		
-output=$(python3 main.py $RELATIVE_FIG_DIR/$BENCH_NAME/default_${KERNEL_VERSION}_${KERNEL_VARIANT}_1_$BENCH_NAME.txt)
+output=$(python3 main.py $RELATIVE_FIG_DIR/$BENCH_NAME/default_${KERNEL_VERSION}_${KERNEL_VARIANT}_${BENCH_ARGS[0]}_$BENCH_NAME.txt)
 strategy=$(echo "$output" | grep "Final Strategy:" | sed 's/Final Strategy: //')
 echo $strategy
 
@@ -133,7 +138,7 @@ if ! make -j; then
 	exit 1
 fi
 
-$BENCHMARK_EXE 1 0.1 1
+$BENCHMARK_EXE ${BENCH_ARGS[@]}
 
 # at least set module to default config; should probably reinstall vanilla
 # 	done in auto_logs.py
