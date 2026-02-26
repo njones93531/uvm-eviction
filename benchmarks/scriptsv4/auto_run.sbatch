@@ -10,6 +10,9 @@ export IGNORE_CC_MISMATCH=1
 module load cuda/12.5
 module load mpi
 
+KERNEL_VERSION="x86_64-555.42.02"
+KERNEL_VARIANT="faults-new"
+
 RELATIVE_FIG_DIR="../../figs/voltron/metrics_stats_relative"
 
 if [ -z "$1" ]; then
@@ -95,7 +98,7 @@ source ~/venvs/uvm/bin/activate
 # 	may make more sense doing in auto_logs
 #		size?
 #		
-output=$(python3 main.py $RELATIVE_FIG_DIR/$BENCH_NAME/default_x86_64-555.42.02_faults-new_1_$BENCH_NAME.txt)
+output=$(python3 main.py $RELATIVE_FIG_DIR/$BENCH_NAME/default_${KERNEL_VERSION}_${KERNEL_VARIANT}_1_$BENCH_NAME.txt)
 strategy=$(echo "$output" | grep "Final Strategy:" | sed 's/Final Strategy: //')
 echo $strategy
 
