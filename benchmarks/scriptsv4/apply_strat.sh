@@ -12,59 +12,82 @@ fi
 
 policy_idx=0
 
-awk -v policy="$POLICY" '
-function next_policy() {
-    p = substr(policy, idx+1, 1)
-    idx++
-    return p
+read -r -d '' CODE << 'EOF' || true
+void setAllocationPolicy(void **a, std::size_t size, char flag) {
+	switch(flag){
+		case 'm': //Policy is migrate; do nothing
+			break;
+		case 'd': //Pin to device; use cudaMemCopy
+			void * devptr;
+			cudaMalloc(&devptr, size);
+			cudaMemcpy(devptr, *a, size, cudaMemcpyHostToDevice);
+			CUDA_CHECK(cudaFree(*a));
+			*a = devptr;
+			break;
+		case 'a': //Pin to device, async variant
+			//First, set preferred location of everything to device
+			cudaMemAdvise(*a, size, cudaMemAdviseSetPreferredLocation, 0);
+			//Finally, move the pin device mem to device
+			cudaMemPrefetchAsync(*a, size, 0, 0);
+			break;
+		case 'h': //Pin to host; use cudaMemAdvise
+			cudaMemAdvise(*a, size, cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId);
+			cudaMemAdvise(*a, size, cudaMemAdviseSetAccessedBy, 0);
+			break;
+		default:
+			std::cout << "Policy flag '" << flag << "' used on allocation " << " is not supported.\n";
+			exit(1);
+	}
+	return;
 }
 
-BEGIN {
-    idx = 0
-}
 
-/cudaMallocManaged[[:space:]]*\(/ {
 
-    mode = next_policy()
+EOF
 
-    # Extract pointer name and size
-    # Matches: &ptr , size ,
-    match($0, /\&[[:space:]]*([a-zA-Z0-9_]+)[[:space:]]*,[[:space:]]*([^,]+),/, m)
-    ptr = m[1]
-    size = m[2]
+TMPFILE=$(mktemp)
+echo "$CODE" | cat - "$FILE" > "$TMPFILE" && mv "$TMPFILE" "$FILE"
 
-    if (mode == "m" || mode == "") {
-        print $0
-    }
+# Extract pointer names
+mapfile -t POINTERS < <(grep -oP 'cudaMallocManaged\(\(void\*\*\)\s*&\K[a-zA-Z_][a-zA-Z0-9_]*' "$FILE")
 
-    else if (mode == "d") {
-        print "{"
-        print "    void *devptr;"
-        print "    cudaMalloc(&devptr, " size ");"
-	print "    //CHECK_CUDA_ERROR();"
-        print "    cudaMemcpy(devptr, " ptr ", " size ", cudaMemcpyHostToDevice);"
-	print "    //CHECK_CUDA_ERROR();"
-        print "    cudaFree(" ptr ");"
-	print "    //CHECK_CUDA_ERROR();"
-        print "    " ptr " = devptr;"
-        print "}"
-    }
+# Extract sizes (everything between the second comma and closing paren)
+mapfile -t SIZES < <(grep -oP 'cudaMallocManaged\([^,]+,\s*\K[^,]+(?=,\s*cudaMemAttachGlobal)' "$FILE")
 
-    else if (mode == "h") {
-        print "cudaMallocManaged((void **) &" ptr ", " size ", cudaMemAttachGlobal);"
-        print "cudaMemAdvise(" ptr ", " size ", cudaMemAdviseSetPreferredLocation, cudaCpuDeviceId);"
-        print "cudaMemAdvise(" ptr ", " size ", cudaMemAdviseSetAccessedBy, 0);"
-    }
+if [[ ${#POINTERS[@]} -eq 0 ]]; then
+    echo "No cudaMallocManaged calls found in '$FILE'."
+    exit 1
+fi
 
-    else {
-        print "// Unknown policy: " mode
-        print $0
-    }
+echo "Found ${#POINTERS[@]} allocations:"
+for i in "${!POINTERS[@]}"; do
+    echo "  ${POINTERS[$i]} -> ${SIZES[$i]}"
+done
 
-    next
-}
+# Applying strat
+for i in "${!POINTERS[@]}"; do
+    flag="${POLICY:$i:1}"
+    if [[ -z "$flag" ]]; then
+        break 
+    fi
+    echo "setAllocationPolicy((void**) &${POINTERS[$i]}, ${SIZES[$i]}, '${flag}');"
+done
 
-{ print }
+# Build the function calls as a block - write to temp file instead
+CALLS_FILE=$(mktemp)
+for i in "${!POINTERS[@]}"; do
+    flag="${POLICY:$i:1}"
+    if [[ -z "$flag" ]]; then
+        break
+    fi
+    echo "    setAllocationPolicy((void**) &${POINTERS[$i]}, ${SIZES[$i]}, '${flag}');" >> "$CALLS_FILE"
+done
 
-' "$FILE"
-
+TMPFILE=$(mktemp)
+while IFS= read -r line; do
+    echo "$line"
+    if [[ "$line" == *"// PLACE ALLOCATION POLICY"* ]]; then
+        cat "$CALLS_FILE"
+    fi
+done < "$FILE" > "$TMPFILE" && mv "$TMPFILE" "$FILE"
+rm "$CALLS_FILE"

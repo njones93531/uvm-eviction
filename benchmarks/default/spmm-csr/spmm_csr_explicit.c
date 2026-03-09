@@ -201,6 +201,8 @@ int main(int argc, char *argv[]) {
     CHECK_CUDA(cudaMemcpy(dB, hB, B_size * sizeof(float), cudaMemcpyHostToDevice));
     CHECK_CUDA(cudaMemcpy(dC, hC, C_size * sizeof(float), cudaMemcpyHostToDevice));
 
+    //PLACE ALLOCATION POLICY
+
 
     //--------------------------------------------------------------------------
     // CUSPARSE APIs

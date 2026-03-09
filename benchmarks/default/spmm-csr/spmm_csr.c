@@ -182,6 +182,8 @@ int main(int argc, char *argv[]) {
         hC[i] = 0.0; // Initialize output vector
     }
 
+    //PLACE ALLOCATION POLICY
+
     //--------------------------------------------------------------------------
     // CUSPARSE APIs
     cusparseHandle_t     handle = NULL;
