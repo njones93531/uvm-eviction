@@ -12,29 +12,38 @@ import config
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-def load_module(module, args={}):
-    # load and unload module first to make sure its unloaded w/o error
-    for i in range(3):
-        try:
-            sh.sudo("modprobe", module)
-            sh.sudo("rmmod", "-f", module)
-            break
-        except Exception as e:
-            print(e)
-    print(f"insmod {module}", args)
-    arg_strs = [f"{key}={value}" for key, value in args.items()] 
-    sh.sudo("modprobe", module, *arg_strs)
-    if config.WARMUP_ENABLED:
-        p = subprocess.Popen([f'{config.WARMUP_DIR}/{config.WARMUP_EXE}'], stdout=subprocess.PIPE)
-        # insert warmup error logging?
-        p.wait()
+#TODO add warmup
+def load_module(module, module_path, args={}):
+    print("Unloading nvidia-uvm (if loaded)")
+    try:
+        sh.sudo("rmmod",  "nvidia-uvm")
+    except sh.ErrorReturnCode as e:
+        err = e.stderr.decode() if isinstance(e.stderr, bytes) else str(e.stderr)
+
+        if "is not currently loaded" in err:
+            print("nvidia-uvm not loaded, continuing...")
+        else:
+            print("Unexpected error while removing nvidia-uvm:")
+            print(err)
+            raise
+
+    arg_list = [f"{k}={v}" for k, v in args.items()]
+    print("Loading nvidia-uvm with args:", arg_list)
+    try:
+        sh.sudo("insmod", module_path, *arg_list)
+    except sh.ErrorReturnCode as e:
+        err = e.stderr.decode() if isinstance(e.stderr, bytes) else str(e.stderr)
+        print(err)
+        raise
+
+    return
 
 def install_module(path):
     print(f"Installing kernel module at {path}")
     oldpwd = os.getcwd()
     os.chdir(path)
-    sh.make("modules", "-j")
-    sh.sudo("make", "modules_install", "-j")
+    #sh.make("modules", "-j")
+    #sh.sudo("make", "modules_install", "-j")
     os.chdir(oldpwd)
 
 kernel_arg_dict={"uvm_perf_prefetch_enable": "nopf","uvm_perf_access_counter_batch_count": "", "uvm_perf_access_counter_granularity": "gran", "uvm_perf_access_counter_threshold": "thold", "uvm_perf_access_counter_mimc_migration_enable": "mimc", "uvm_perf_access_counter_momc_migration_enable": "momc", "uvm_perf_prefetch_threshold":"thold"}
@@ -76,19 +85,20 @@ class Experiment:
             print("Running experiment:", logdir_base)
 
             install_module(f"{config.DRIVER_DIR}/{self.kernel_version}/{self.kernel_variant}/kernel/")
+            module_path = f"{config.DRIVER_DIR}/{self.kernel_version}/{self.kernel_variant}/kernel/nvidia-uvm.ko"
+            print(module_path)
             
             attempts = 0
-            success = False
-            while not success:
+            while attempts < 3:
                 try:
-                    load_module("nvidia_uvm", self.kernel_args)
-                except:
-                    time.sleep((attempts+1) * 30)
+                    load_module("nvidia_uvm", module_path, self.kernel_args)
+                    break
+                except Exception as e:
+                    print(f"Attempt {attempts+1} failed:", e)
+                    time.sleep((attempts + 1) *30)
                     attempts += 1
-                else:
-                   success = True 
-                if attempts > 2:
-                    sys.exit(1)
+            else:
+                sys.exit(1)
 
 
             oldpwd = os.getcwd()

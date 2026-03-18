@@ -15,4 +15,5 @@ python3 -u faults.py
 
 # at least set module to default config; should probably reinstall vanilla
 sudo rmmod nvidia-uvm
-sudo modprobe nvidia-uvm #uvm_perf_prefetch_enable=0 uvm_perf_fault_coalesce=0 #uvm_perf_fault_batch_count=1
+sudo insmod ../../drivers/x86_64-555.42.02/vanilla/kernel/nvidia-uvm.ko
+#sudo modprobe nvidia-uvm #uvm_perf_prefetch_enable=0 uvm_perf_fault_coalesce=0 #uvm_perf_fault_batch_count=1
