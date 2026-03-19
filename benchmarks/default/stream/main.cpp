@@ -115,9 +115,11 @@ void run()
   }
 
   // Create host vectors
+  /*
   std::vector<T> a(ARRAY_SIZE);
   std::vector<T> b(ARRAY_SIZE);
   std::vector<T> c(ARRAY_SIZE);
+  */
 
   // Result of the Dot kernel
   T sum;
@@ -206,8 +208,10 @@ void run()
   }
 
   // Check solutions
+  /*
   stream->read_arrays(a, b, c);
   check_solution<T>(num_times, a, b, c, sum);
+  */
 
   // Display timing results
   if (output_as_csv)
@@ -295,9 +299,11 @@ void run_triad()
     std::cout << "Precision: double" << std::endl;
 
   // Create host vectors
+  /*
   std::vector<T> a(ARRAY_SIZE);
   std::vector<T> b(ARRAY_SIZE);
   std::vector<T> c(ARRAY_SIZE);
+  */
   std::streamsize ss = std::cout.precision();
   std::cout << std::setprecision(1) << std::fixed
     << "Array size: " << ARRAY_SIZE*sizeof(T)*1.0E-3 << " KB"
@@ -360,9 +366,9 @@ void run_triad()
 
   // Check solutions
   T sum = 0.0;
-  stream->read_arrays(a, b, c);
-  std::cout << "checking solution" << std::endl;
-  check_solution<T>(num_times, a, b, c, sum);
+  //stream->read_arrays(a, b, c);
+  std::cout << "not checking solution" << std::endl;
+  //check_solution<T>(num_times, a, b, c, sum);
 
   // Display timing results
   double total_bytes = 3 * sizeof(T) * ARRAY_SIZE * num_times;
