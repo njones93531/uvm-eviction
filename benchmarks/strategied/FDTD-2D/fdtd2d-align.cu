@@ -36,13 +36,14 @@ typedef float DATA_TYPE;
 size_t PSIZE;
 
 
-void init_arrays(DATA_TYPE* _fict_, DATA_TYPE* ex, DATA_TYPE* ey, DATA_TYPE* hz, DATA_TYPE* _fict_gpu, DATA_TYPE* ex_gpu, DATA_TYPE* ey_gpu, DATA_TYPE* hz_gpu)
+void init_arrays(DATA_TYPE* _fict_, DATA_TYPE* ex, DATA_TYPE* ey, DATA_TYPE* hz, DATA_TYPE* _fict_gpu, DATA_TYPE* ex_gpu, DATA_TYPE* ey_gpu, DATA_TYPE* hz_gpu, int cpu)
 {
 	size_t i, j;
 
   	for (i = 0; i < tmax; i++)
 	{
-		_fict_[i] = (DATA_TYPE) i;
+		if (cpu)
+			_fict_[i] = (DATA_TYPE) i;
 		_fict_gpu[i] = (DATA_TYPE) i;
 	}
 	
@@ -50,9 +51,11 @@ void init_arrays(DATA_TYPE* _fict_, DATA_TYPE* ex, DATA_TYPE* ey, DATA_TYPE* hz,
 	{
 		for (j = 0; j < NY; j++)
 		{
-			ex[i*NY + j] = ((DATA_TYPE) i*(j+1) + 1) / NX;
-			ey[i*NY + j] = ((DATA_TYPE) (i-1)*(j+2) + 2) / NX;
-			hz[i*NY + j] = ((DATA_TYPE) (i-9)*(j+4) + 3) / NX;
+			if (cpu) {
+				ex[i*NY + j] = ((DATA_TYPE) i*(j+1) + 1) / NX;
+				ey[i*NY + j] = ((DATA_TYPE) (i-1)*(j+2) + 2) / NX;
+				hz[i*NY + j] = ((DATA_TYPE) (i-9)*(j+4) + 3) / NX;
+			}
 			ex_gpu[i*NY + j] = ((DATA_TYPE) i*(j+1) + 1) / NX;
 			ey_gpu[i*NY + j] = ((DATA_TYPE) (i-1)*(j+2) + 2) / NX;
 			hz_gpu[i*NY + j] = ((DATA_TYPE) (i-9)*(j+4) + 3) / NX;
@@ -228,8 +231,6 @@ int main(int argc, char * argv[])
 	if(argc >= 3)
                 cpu = atoi(argv[2]);	
 
-
-
 	double t_start, t_end;
 
 	DATA_TYPE* _fict_;
@@ -242,17 +243,19 @@ int main(int argc, char * argv[])
 	DATA_TYPE *ey_gpu;
 	DATA_TYPE *hz_gpu;
 
-	_fict_ = (DATA_TYPE*)malloc(tmax*sizeof(DATA_TYPE));
-	ex = (DATA_TYPE*)malloc(NX*(NY+1)*sizeof(DATA_TYPE));
-	ey = (DATA_TYPE*)malloc((NX+1)*NY*sizeof(DATA_TYPE));
-	hz = (DATA_TYPE*)malloc(NX*NY*sizeof(DATA_TYPE));
+	if (cpu) {
+		_fict_ = (DATA_TYPE*)malloc(tmax*sizeof(DATA_TYPE));
+		ex = (DATA_TYPE*)malloc(NX*(NY+1)*sizeof(DATA_TYPE));
+		ey = (DATA_TYPE*)malloc((NX+1)*NY*sizeof(DATA_TYPE));
+		hz = (DATA_TYPE*)malloc(NX*NY*sizeof(DATA_TYPE));
+	}
 
 	cudaMallocManaged(&_fict_gpu, sizeof(DATA_TYPE) * tmax);
 	cudaMallocManaged(&ex_gpu, sizeof(DATA_TYPE) * NX * (NY + 1));
 	cudaMallocManaged(&ey_gpu, sizeof(DATA_TYPE) * (NX + 1) * NY);
 	cudaMallocManaged(&hz_gpu, sizeof(DATA_TYPE) * NX * NY);
 
-	init_arrays(_fict_, ex, ey, hz, _fict_gpu, ex_gpu, ey_gpu, hz_gpu);
+	init_arrays(_fict_, ex, ey, hz, _fict_gpu, ex_gpu, ey_gpu, hz_gpu, cpu);
 
 	GPU_argv_init();
 	
@@ -275,10 +278,12 @@ int main(int argc, char * argv[])
 		compareResults(hz, hz_gpu);
 	}
 
-	free(_fict_);
-	free(ex);
-	free(ey);
-	free(hz);
+	if (cpu) {
+		free(_fict_);
+		free(ex);
+		free(ey);
+		free(hz);
+	}
 			
 	cudaFree(_fict_gpu);
 	acp.freeMemPressure();
