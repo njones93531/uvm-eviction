@@ -25,3 +25,4 @@ tealeaf.cuda
 *.in
 !run
 *.txt
+*.o_binary
