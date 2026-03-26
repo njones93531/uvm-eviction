@@ -2254,6 +2254,7 @@ static NV_STATUS service_fault_batch(uvm_parent_gpu_t *parent_gpu,
 
     ats_invalidate->tlb_batch_pending = false;
 
+    hpcs_fault_log_write_batch(batch_context);
     for (i = 0; i < batch_context->num_coalesced_faults;) {
         NvU32 block_faults;
         uvm_fault_buffer_entry_t *current_entry = batch_context->ordered_fault_cache[i];
