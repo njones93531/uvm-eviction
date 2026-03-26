@@ -270,8 +270,15 @@ int main(int argc, char* argv[]){
 #endif
 	printf("\nPerforming BFS...\n");
 	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-	uint64_t numblocks = ((vertices * WARP_SIZE + BLOCK_SIZE) / BLOCK_SIZE);
-	dim3 blocks(BLOCK_SIZE, (numblocks + BLOCK_SIZE)/BLOCK_SIZE);
+
+	int threads = BLOCK_SIZE;
+	uint64_t totalThreads = vertices * WARP_SIZE;
+
+	uint64_t grid = (totalThreads + threads - 1) / threads;
+
+	dim3 blocks(grid);
+	//dim3 blocks(min((uint64_t)65535, grid), (grid + 65535) / 65535); 
+
 	level = 0;
 #ifdef CHECK
 	int width = 0;
