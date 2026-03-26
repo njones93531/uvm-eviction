@@ -166,10 +166,12 @@ long MatrixMultiply(int argc, char **argv,
                    const dim3 &dimsB) {
     // Allocate host memory for matrices A and B
     size_t size_A = dimsA.x * dimsA.y;
-    size_t mem_size_A = sizeof(float) * size_A;
+    //size_t mem_size_A = sizeof(float) * size_A;
+    size_t mem_size_A = static_cast<size_t>(dimsA.x) * static_cast<size_t>(dimsA.y) * sizeof(float);
     float *h_A;/* = reinterpret_cast<float *>(malloc(mem_size_A))*/;
     size_t size_B = dimsB.x * dimsB.y;
-    size_t mem_size_B = sizeof(float) * size_B;
+    //size_t mem_size_B = sizeof(float) * size_B;
+    size_t mem_size_B = static_cast<size_t>(dimsB.x) * static_cast<size_t>(dimsB.y) * sizeof(float);
     float *h_B;/* = reinterpret_cast<float *>(malloc(mem_size_B))*/;
 
 		checkCudaErrors(cudaMallocManaged(&h_A, mem_size_A));
@@ -185,7 +187,8 @@ long MatrixMultiply(int argc, char **argv,
     // Allocate host matrix C
     dim3 dimsC(dimsB.x, dimsA.y, 1);
     size_t size_C = dimsC.x * dimsC.y;
-    size_t mem_size_C = dimsC.x * dimsC.y * sizeof(float);
+    //size_t mem_size_C = dimsC.x * dimsC.y * sizeof(float);
+    size_t mem_size_C = static_cast<size_t>(dimsC.x) * static_cast<size_t>(dimsC.y) * sizeof(float);
     float *h_C;/* = reinterpret_cast<float *>(malloc(mem_size_C));*/
 
 		checkCudaErrors(cudaMallocManaged(&h_C, mem_size_C));
